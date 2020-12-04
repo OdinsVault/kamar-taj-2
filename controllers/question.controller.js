@@ -41,8 +41,8 @@ exports.get_by_level = (req, res, next) => {
     .exec()
     .then((docs) => {
       const response = {
-        levels: docs.length,
-        groups: docs.map((doc) => {
+        levelCount: docs.length,
+        levels: docs.map((doc) => {
           return {
             level: doc._id,
             questions: doc.questions,
