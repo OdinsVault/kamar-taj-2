@@ -11,7 +11,7 @@ exports.signup = (req, res, next) => {
     .then((user) => {
       if (user.length >= 1) {
         return res.status(409).json({
-          message: "Mail exists",
+          message: "This email already exists",
         });
       } else {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
@@ -22,6 +22,8 @@ exports.signup = (req, res, next) => {
           } else {
             const user = new User({
               _id: new mongoose.Types.ObjectId(),
+              fname: req.body.fname,
+              lname: req.body.lname,
               email: req.body.email,
               password: hash,
             });
@@ -29,7 +31,7 @@ exports.signup = (req, res, next) => {
               .save()
               .then((result) => {
                 return res.status(201).json({
-                  message: "User created!",
+                  message: "User created successfully!",
                   result: result,
                 });
               })
@@ -58,13 +60,13 @@ exports.login = (req, res, next) => {
     .then((user) => {
       if (user === null) {
         return res.status(401).json({
-          message: "Auth failed!",
+          message: "Authentication failed!",
         });
       }
       bcrypt.compare(req.body.password, user.password, (err, result) => {
         if (err) {
           return res.status(401).json({
-            message: "Auth failed!",
+            message: "Authentication failed!",
           });
         }
         if (result) {
@@ -79,12 +81,12 @@ exports.login = (req, res, next) => {
             }
           );
           return res.status(200).json({
-            message: "Auth successful!",
+            message: "Authentication successful!",
             token: token,
           });
         }
         res.status(401).json({
-          message: "Auth failed!",
+          message: "Authentication failed!",
         });
       });
     })
@@ -106,4 +108,25 @@ exports.deleteUser = (req, res, next) => {
         error: err,
       });
     });
+};
+
+//Get all users
+exports.getAllUsers = (req, reg, next) => {
+  User.find()
+    .select("_id fname lname email")
+    .exec()
+    .then((docs) => {
+      const response = {
+        userCount: docs.length,
+        users: docs.map((doc) => {
+          return {
+            id: doc._id,
+            fname: doc.fname,
+            lname: doc.lname,
+            email: doc.email,
+          };
+        }),
+      };
+    })
+    .catch();
 };
