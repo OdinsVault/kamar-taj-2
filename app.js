@@ -46,6 +46,7 @@ app.get("/", (req, res) => {
 //Routes>>>>>>>>>>>>>>>>
 require("./routes/questions.routes")(app);
 require("./routes/user.routes")(app);
+require("./routes/dashboard.routes")(app);
 
 app.use((req, res, next) => {
   const error = new Error("Not Found!");

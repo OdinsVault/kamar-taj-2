@@ -25,11 +25,14 @@ exports.signup = (req, res, next) => {
               fname: req.body.fname,
               lname: req.body.lname,
               email: req.body.email,
+              institute: req.body.institute,
+              dob: new Date(req.body.dob),
               password: hash,
             });
             user
               .save()
               .then((result) => {
+                delete result.password;
                 return res.status(201).json({
                   message: "User created successfully!",
                   result: result,
@@ -129,4 +132,30 @@ exports.getAllUsers = (req, reg, next) => {
       };
     })
     .catch();
+};
+
+// get performance details - rank
+exports.getPeformance = async (req, res) => {
+  try {
+    const user = await User.aggregate([
+      {$project: { _id: 1, score: 1, completion: 1 }},
+      {$sort: { score: 1 }},
+      {$group: { _id: '', ranked: { $push: '$$ROOT'} }},
+      {$unwind: { path: '$ranked', includeArrayIndex: 'rank' }},
+      { $project: {
+          _id: '$ranked._id',
+          score: { $toInt: '$ranked.score' },
+          completion: { $toInt: '$ranked.completion' },
+          rank: 1 } },
+      {$match: { _id: mongoose.Types.ObjectId(req.userData.userId) }},
+    ]);
+    if (!user) return res.status(404).json({status: 'User not found'});
+
+    return res.status(200).json(user);
+  } catch (err) {
+    console.log(err);
+      res.status(500).json({
+        error: err,
+      });
+  }
 };

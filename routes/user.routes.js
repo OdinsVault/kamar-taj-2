@@ -1,9 +1,7 @@
+const UserController = require("../controllers/user.controller"),
+      checkAuth = require('../middleware/check-auth');
+
 module.exports = (app) => {
-  const User = require("../models/user");
-  const mongoose = require("mongoose");
-  const bcrypt = require("bcrypt");
-  const jwt = require("jsonwebtoken");
-  const UserController = require("../controllers/user.controller");
 
   //signup user
   app.post("/user/signup", UserController.signup);
@@ -13,4 +11,7 @@ module.exports = (app) => {
 
   //delete user
   app.delete("/user/:userId", UserController.deleteUser);
+
+  // user rank & performance details
+  app.get('/user/performance', checkAuth, UserController.getPeformance);
 };
