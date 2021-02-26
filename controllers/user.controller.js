@@ -176,13 +176,13 @@ exports.getPeformance = async (req, res) => {
   try {
     const user = await User.aggregate([
       {$project: { _id: 1, score: 1, completion: 1 }},
-      {$sort: { score: 1 }},
+      {$sort: { score: -1 }},
       {$group: { _id: '', ranked: { $push: '$$ROOT'} }},
       {$unwind: { path: '$ranked', includeArrayIndex: 'rank' }},
       { $project: {
           _id: '$ranked._id',
-          score: { $toInt: '$ranked.score' },
-          completion: { $toInt: '$ranked.completion' },
+          score: '$ranked.score',
+          completion: '$ranked.completion',
           rank: 1 } },
       {$match: { _id: mongoose.Types.ObjectId(req.params.userId) }},
     ]);
