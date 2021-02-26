@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ExceptionHandler = require("../exceptions/ExceptionHandler");
+const { findOneAndUpdate } = require("../models/user");
 
 //Signup User
 exports.signup = (req, res, next) => {
@@ -96,13 +97,14 @@ exports.login = (req, res, next) => {
     .catch(ExceptionHandler.handleError);
 };
 
-//Delete User
-exports.deleteUser = (req, res, next) => {
-  User.remove({ _id: req.params.userId })
+//Delete own User profile
+exports.deleteUser = (req, res) => {
+  User.remove({ _id: req.userData.userId })
     .exec()
-    .then((result) => {
+    .then(result => {
       res.status(200).json({
         message: "User deleted!",
+        status: result
       });
     })
     .catch((err) => {
@@ -134,8 +136,43 @@ exports.getAllUsers = (req, reg, next) => {
     .catch();
 };
 
+// get user personal profile - completed questions
+exports.getUser = async (req, res) => {
+  try {
+    const user = await User.findOne({_id: req.userData.userId}, '-__v -password').populate('finished');
+    if (!user) return res.status(404).json({status: 'User not found'});
+    res.status(200).json(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({status: 'Error occured', err});
+  }
+};
+
+// Edit the logged in user personal details
+exports.editUser = async (req, res) => {
+  if (!req.body) return res.status(400).json({status: 'No update body present'});
+  // remove unnecessary fields from update
+  delete req.body.finished;
+  delete req.body.score;
+  delete req.body.completion;
+
+  try {
+    const hashed = await bcrypt.hash(req.body.password, 10);
+    req.body.password = hashed;
+    const updatedUser = await User.findOneAndUpdate({ _id: req.userData.userId }, req.body, { new: true });
+    if (!updatedUser) return res.status(404).json({status: 'User not found'});
+    delete updatedUser.__v;
+    delete updatedUser.password;
+    res.status(200).json(updatedUser);
+  } catch (err) {
+      console.log(err);
+      res.status(500).json({status: 'Error occured', err});
+  }
+}
+
 // get performance details - rank
 exports.getPeformance = async (req, res) => {
+  if (!req.params.userId) return res.status(400).json({status: 'User id not presented'});
   try {
     const user = await User.aggregate([
       {$project: { _id: 1, score: 1, completion: 1 }},
@@ -147,10 +184,10 @@ exports.getPeformance = async (req, res) => {
           score: { $toInt: '$ranked.score' },
           completion: { $toInt: '$ranked.completion' },
           rank: 1 } },
-      {$match: { _id: mongoose.Types.ObjectId(req.userData.userId) }},
+      {$match: { _id: mongoose.Types.ObjectId(req.params.userId) }},
     ]);
     if (!user) return res.status(404).json({status: 'User not found'});
-
+    user.map(u => u.rank++);
     return res.status(200).json(user);
   } catch (err) {
     console.log(err);

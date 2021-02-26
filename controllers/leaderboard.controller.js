@@ -18,7 +18,7 @@ exports.rankings = async (req, res) => {
             } }
         ]);
         if (!userList) return res.status(404).json({status: 'Rankings could not be retreived'});
-    
+        userList.map(u => u.rank++);
         return res.status(200).json(userList);
       } catch (err) {
         console.log(err);

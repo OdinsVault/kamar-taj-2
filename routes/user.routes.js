@@ -9,9 +9,15 @@ module.exports = (app) => {
   //user login
   app.post("/user/login", UserController.login);
 
-  //delete user
-  app.delete("/user/:userId", UserController.deleteUser);
+  //delete own user profile
+  app.delete("/user", checkAuth, UserController.deleteUser);
+
+  // get logged in user personal profile - completed questions
+  app.get('/user', checkAuth, UserController.getUser);
+
+  // edit user details
+  app.put('/user', checkAuth, UserController.editUser);
 
   // user rank & performance details
-  app.get('/user/performance', checkAuth, UserController.getPeformance);
+  app.get('/user/performance/:userId', UserController.getPeformance);
 };
