@@ -1,5 +1,5 @@
-const user = require("../models/user");
-const User = require("../models/user");
+const User = require("../models/user"),
+      mongoose = require('mongoose');
 
 // get the leaderboard rankings
 exports.rankings = async (req, res) => {
@@ -49,22 +49,17 @@ exports.rankings = async (req, res) => {
       }
 }
 
-// search the leaderboard for user
-exports.searchLeaderboard = async (req, res) => {
-  if (!req.query.s) return res.status(400).json({status: 'Search query is not present'});
+// search the leaderboard for user & get ranking details
+exports.getUserRanking = async (req, res) => {
+  if (!req.params.userId) return res.status(400).json({status: 'UserId is not present'});
 
   try {
-    const users = await User.aggregate([
+    const user = await User.aggregate([
       { $project: { password: 0, __v: 0 } },
       { $sort: { score: -1 } },
       { $group: { _id: '', ranked: { $push: '$$ROOT'} } },
       { $unwind: { path: '$ranked', includeArrayIndex: 'rank' } },
-      { $match: 
-        { $or: [
-          { 'ranked.fname': req.query.s },
-          { 'ranked.lname': req.query.s },
-          { 'ranked.email': req.query.s },
-        ] } },
+      { $match: { 'ranked._id': mongoose.Types.ObjectId(req.params.userId) } },
       { $project: 
           { 
               _id: '$ranked._id',
@@ -78,14 +73,9 @@ exports.searchLeaderboard = async (req, res) => {
           } },
     ]);
 
-    users.map(doc => doc.rank++);
+    user[0].rank++;
 
-    const response = {
-      search: {query: req.query.s},
-      results: users
-    }
-
-    res.status(200).json(response);
+    res.status(200).json(user[0]);
 
   } catch (err) {
     console.log(err);
@@ -95,6 +85,7 @@ exports.searchLeaderboard = async (req, res) => {
   }
 }
 
+// filter the leaderboard on score and/or institute
 exports.filterLeaderboard = async (req, res) => {
 
   const match = { $match: {
@@ -138,6 +129,20 @@ exports.filterLeaderboard = async (req, res) => {
 
     res.status(200).json(response);
 
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      error: err,
+    });
+  }
+}
+
+// get the distinct values for institute for filtration
+exports.distinctInstitutes = async (req, res) => {
+  try {
+    const distincts = await User.distinct("institute");
+
+    res.status(200).json(distincts);
   } catch (err) {
     console.log(err);
     res.status(500).json({

@@ -8,11 +8,11 @@ module.exports = (app) => {
   //Get # of levels
   app.get("/questions/bylevel", QuestionsController.get_by_level);
 
-  //get question by id
-  app.get("/questions/:questionId", QuestionsController.get_one);
-
   //Create a question
   app.post("/questions", checkAuth, QuestionsController.create_question);
+
+  //get question by id
+  app.get("/questions/:questionId", QuestionsController.get_one);
 
   //update a question
   app.patch(

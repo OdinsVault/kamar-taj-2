@@ -170,9 +170,74 @@ exports.editUser = async (req, res) => {
   }
 }
 
+// search for a user autocomplete
+exports.autocompleteUser = async (req, res) => {
+  if (!req.query.search) return res.status(400).json({status: 'Search query is not present'});
+
+  try {
+    const results = await User.aggregate([
+      {
+        $search: {
+          index: 'users-search',
+          compound: {
+            should: [
+              {
+                autocomplete: {
+                query: req.query.search,
+                path: "fname",
+                fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 3
+                  }
+                }
+              },
+              {
+                autocomplete: {
+                query: req.query.search,
+                path: "lname",
+                fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 3
+                  }
+                }
+              },
+              {
+                autocomplete: {
+                query: req.query.search,
+                path: "email",
+                fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 3
+                  }
+                }
+              },
+            ]
+          }
+        }
+      },
+      { $limit: 10 },
+      { $project: { _id: 1, fname: 1, lname: 1, email: 1 } }
+    ]);
+
+    const response = {
+      search: req.query.search,
+      results
+    }
+
+    res.status(200).json(response);
+
+  } catch (err) {
+    console.log(err);
+      res.status(500).json({
+        error: err,
+      });
+  }
+}
+
 // get performance details - rank
 exports.getPeformance = async (req, res) => {
   if (!req.params.userId) return res.status(400).json({status: 'User id not presented'});
+
   try {
     const user = await User.aggregate([
       {$project: { _id: 1, score: 1, completion: 1 }},
@@ -186,9 +251,12 @@ exports.getPeformance = async (req, res) => {
           rank: 1 } },
       {$match: { _id: mongoose.Types.ObjectId(req.params.userId) }},
     ]);
+
     if (!user) return res.status(404).json({status: 'User not found'});
+
     user.map(u => u.rank++);
     return res.status(200).json(user);
+
   } catch (err) {
     console.log(err);
       res.status(500).json({

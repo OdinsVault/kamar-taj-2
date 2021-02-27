@@ -5,9 +5,12 @@ module.exports = (app) => {
     // get the leaderboard with pagination
     app.get('/leaderboard', LeaderboardController.rankings);
 
-    // search the leaderboard for specific user with name/email
-    app.get('/leaderboard/search', LeaderboardController.searchLeaderboard);
-
     // filter on score, institute
     app.get('/leaderboard/filter', LeaderboardController.filterLeaderboard);
+
+    // get distinct institute values for institute filter
+    app.get('/leaderboard/distinctinstitutes', LeaderboardController.distinctInstitutes);
+
+    // get specific user ranking in leaderboard
+    app.get('/leaderboard/:userId', LeaderboardController.getUserRanking);
 };

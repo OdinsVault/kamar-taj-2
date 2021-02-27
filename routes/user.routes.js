@@ -18,6 +18,9 @@ module.exports = (app) => {
   // edit user details
   app.put('/user', checkAuth, UserController.editUser);
 
+  // search users on fname/lname/email autocomplete results limit 10
+  app.get('/user/autocomplete', UserController.autocompleteUser);
+
   // user rank & performance details
   app.get('/user/performance/:userId', UserController.getPeformance);
 };
