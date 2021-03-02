@@ -33,10 +33,11 @@ exports.signup = (req, res, next) => {
             user
               .save()
               .then((result) => {
-                delete result.password;
+                delete result._doc.password;
+                delete result._doc.__v; // remove unnecessary fields from return obj
                 return res.status(201).json({
                   message: "User created successfully!",
-                  result: result,
+                  result
                 });
               })
               .catch((err) => {
@@ -136,11 +137,30 @@ exports.getAllUsers = (req, reg, next) => {
     .catch();
 };
 
-// get user personal profile - completed questions
+/**
+ * get user personal profile - populated with completed questions
+ * or get only the user profile.
+ * 
+ * Provide query parameter: `populate=true` to get full profile
+ * @param {Request} req 
+ * @param {Response} res 
+ */
 exports.getUser = async (req, res) => {
+  const isPopulate = Boolean(req.query.populate || false);
+
+  let query = User.findOne({_id: req.userData.userId}, '-__v -password');
+
   try {
-    const user = await User.findOne({_id: req.userData.userId}, '-__v -password').populate('finished');
+    let user;
+
+    if (isPopulate) {
+      user = await query.populate('finished.practice', '-__v').populate('finished.compete', '-__v');
+    } else {
+      user = await query;
+    }
+
     if (!user) return res.status(404).json({status: 'User not found'});
+
     res.status(200).json(user);
   } catch (err) {
     console.log(err);
@@ -148,7 +168,11 @@ exports.getUser = async (req, res) => {
   }
 };
 
-// Edit the logged in user personal details
+/**
+ * Edit the logged in user personal details
+ * @param {Request} req 
+ * @param {Response} res 
+ */
 exports.editUser = async (req, res) => {
   if (!req.body) return res.status(400).json({status: 'No update body present'});
   // remove unnecessary fields from update
@@ -159,10 +183,16 @@ exports.editUser = async (req, res) => {
   try {
     const hashed = await bcrypt.hash(req.body.password, 10);
     req.body.password = hashed;
-    const updatedUser = await User.findOneAndUpdate({ _id: req.userData.userId }, req.body, { new: true });
+
+    const updatedUser = await User
+      .findOneAndUpdate({ _id: req.userData.userId }, req.body, { new: true });
+
     if (!updatedUser) return res.status(404).json({status: 'User not found'});
+
+    // delete unnecessary fields from updated response
     delete updatedUser.__v;
     delete updatedUser.password;
+
     res.status(200).json(updatedUser);
   } catch (err) {
       console.log(err);
@@ -170,7 +200,14 @@ exports.editUser = async (req, res) => {
   }
 }
 
-// search for a user autocomplete
+/**
+ * search users on `fname||lname||email` 
+ * autocomplete results limit 10
+ * 
+ * Provide the search string in query parameter: `search=<searchStr>`
+ * @param {Request} req 
+ * @param {Response} res 
+ */
 exports.autocompleteUser = async (req, res) => {
   if (!req.query.search) return res.status(400).json({status: 'Search query is not present'});
 
@@ -234,7 +271,12 @@ exports.autocompleteUser = async (req, res) => {
   }
 }
 
-// get performance details - rank
+/**
+ * Get performance details of the user
+ * specified in path variable: /:userId
+ * @param {Request} req 
+ * @param {Response} res 
+ */
 exports.getPeformance = async (req, res) => {
   if (!req.params.userId) return res.status(400).json({status: 'User id not presented'});
 

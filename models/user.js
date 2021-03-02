@@ -16,7 +16,10 @@ const userSchema = mongoose.Schema({
   institute: { type: String, required: true },
   xp: { type: String, default: XP.BEGINNER },
   score: { type: Number, default: 0 },
-  finished: [{ type: mongoose.Types.ObjectId, ref: 'Question' }],
+  finished: {
+    practice: [{ type: mongoose.Types.ObjectId, ref: 'PracticeQuestion' }],
+    compete: [{ type: mongoose.Types.ObjectId, ref: 'CompeteQuestion' }]
+  },
   completion: { type: Number, default: 0 }
 });
 

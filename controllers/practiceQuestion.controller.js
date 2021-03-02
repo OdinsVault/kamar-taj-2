@@ -1,9 +1,9 @@
-const Question = require("../models/question");
+const PracticeQ = require("../models/practiceQuestion");
 const mongoose = require("mongoose");
 
 //Get all questions
 exports.get_all = (req, res, next) => {
-  Question.find()
+  PracticeQ.find()
     .select("_id title description inputs outputs difficulty level category")
     .exec()
     .then((docs) => {
@@ -35,7 +35,7 @@ exports.get_all = (req, res, next) => {
 
 //get question by level
 exports.get_by_level = (req, res, next) => {
-  Question.aggregate([
+  PracticeQ.aggregate([
     { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
   ])
     .exec()
@@ -62,10 +62,9 @@ exports.get_by_level = (req, res, next) => {
 //Get question by id
 exports.get_one = (req, res, next) => {
   const id = req.params.questionId;
-  Question.findById(id)
+  PracticeQ.findById(id)
     .exec()
     .then((doc) => {
-      console.log(doc);
       if (doc) {
         res.status(200).json(doc);
       } else {
@@ -82,7 +81,7 @@ exports.get_one = (req, res, next) => {
 
 //Create question
 exports.create_question = (req, res, next) => {
-  const question = new Question({
+  const question = new PracticeQ({
     _id: new mongoose.Types.ObjectId(),
     title: req.body.title,
     description: req.body.description,
@@ -91,15 +90,15 @@ exports.create_question = (req, res, next) => {
     difficulty: req.body.difficulty,
     level: req.body.level,
     category: req.body.category,
+    testcases: req.body.testcases,
   });
 
   question
     .save()
     .then((result) => {
-      console.group(result);
       res.status(201).json({
-        message: "Question saved successfully!",
-        createdProduct: result,
+        message: "PracticeQ saved successfully!",
+        created: result,
         request: {
           type: "GET",
           url: process.env.BASE_URL + "/questions/" + result._id,
@@ -117,14 +116,11 @@ exports.create_question = (req, res, next) => {
 //Update question
 exports.update_question = (req, res, next) => {
   const id = req.params.questionId;
-  const updateOps = {};
-  for (const ops of req.body) {
-    updateOps[ops.propName] = ops.value;
-  }
-  Question.update({ _id: id }, { $set: updateOps })
+  if (!id || id === '') return res.status(400).json({message: 'Question id is not present'});
+
+  PracticeQ.update({ _id: id }, { $set: req.body })
     .exec()
     .then((result) => {
-      console.log(result);
       res.status(200).json({
         message: "Question updated!",
         request: {
@@ -145,7 +141,7 @@ exports.update_question = (req, res, next) => {
 
 exports.delete_question = (req, res, next) => {
   const id = req.params.questionId;
-  Question.deleteOne({ _id: id })
+  PracticeQ.deleteOne({ _id: id })
     .exec()
     .then((result) => {
       res.status(200).json({

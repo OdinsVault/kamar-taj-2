@@ -44,7 +44,8 @@ app.get("/", (req, res) => {
 });
 
 //Routes>>>>>>>>>>>>>>>>
-require("./routes/questions.routes")(app);
+require("./routes/practiceQuestion.routes")(app);
+require("./routes/competeQuestion.routes")(app);
 require("./routes/user.routes")(app);
 require("./routes/leaderboard.routes")(app);
 
