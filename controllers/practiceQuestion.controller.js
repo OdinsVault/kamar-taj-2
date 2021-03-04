@@ -1,5 +1,6 @@
 const PracticeQ = require("../models/practiceQuestion");
 const mongoose = require("mongoose");
+const { ROUTES } = require("../resources/constants");
 
 //Get all questions
 exports.get_all = (req, res, next) => {
@@ -60,8 +61,8 @@ exports.get_by_level = (req, res, next) => {
 };
 
 //Get question by id
-exports.get_one = (req, res, next) => {
-  const id = req.params.questionId;
+exports.get_one = (req, res) => {
+  const id = req.params[ROUTES.QUESTIONID];
   PracticeQ.findById(id)
     .exec()
     .then((doc) => {
@@ -80,7 +81,7 @@ exports.get_one = (req, res, next) => {
 };
 
 //Create question
-exports.create_question = (req, res, next) => {
+exports.create_question = (req, res) => {
   const question = new PracticeQ({
     _id: new mongoose.Types.ObjectId(),
     title: req.body.title,
@@ -91,6 +92,7 @@ exports.create_question = (req, res, next) => {
     level: req.body.level,
     category: req.body.category,
     testcases: req.body.testcases,
+    pointsAllocated: req.body.pointsAllocated,
   });
 
   question
@@ -114,36 +116,40 @@ exports.create_question = (req, res, next) => {
 };
 
 //Update question
-exports.update_question = (req, res, next) => {
-  const id = req.params.questionId;
+exports.update_question = async (req, res) => {
+  const id = req.params[ROUTES.QUESTIONID];
   if (!id || id === '') return res.status(400).json({message: 'Question id is not present'});
 
-  PracticeQ.update({ _id: id }, { $set: req.body })
-    .exec()
-    .then((result) => {
-      res.status(200).json({
-        message: "Question updated!",
-        request: {
-          type: "GET",
-          url: process.env.BASE_URL + "/questions/" + id,
-        },
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        error: err,
-      });
-    });
+  try {
+    const updatedQ = await PracticeQ
+      .findOneAndUpdate({_id: id}, req.body, {new: true});
+
+    if (!updatedQ) return res.status(404).json({status: 'Question not found'});
+
+    const response = {
+      message: 'Question updated!',
+      updated: updatedQ,
+      request: {
+        type: 'GET',
+        url: `${process.env.BASE_URL}/questions/${id}`,
+      },
+    }
+
+    res.status(200).json(response);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({error: err});
+  }
 };
 
 //Delete question
 
-exports.delete_question = (req, res, next) => {
-  const id = req.params.questionId;
+exports.delete_question = (req, res) => {
+  const id = req.params[ROUTES.QUESTIONID];
   PracticeQ.deleteOne({ _id: id })
     .exec()
-    .then((result) => {
+    .then((_) => {
       res.status(200).json({
         message: "Question deleted!",
         request: {

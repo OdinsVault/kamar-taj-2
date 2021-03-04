@@ -1,26 +1,27 @@
 const UserController = require("../controllers/user.controller"),
-      checkAuth = require('../middleware/check-auth');
+      checkAuth = require('../middleware/check-auth'),
+      {ROUTES} = require('../resources/constants');
 
 module.exports = (app) => {
 
   //signup user
-  app.post("/user/signup", UserController.signup);
+  app.post(`/${ROUTES.USER}/${ROUTES.SIGNUP}`, UserController.signup);
 
   //user login
-  app.post("/user/login", UserController.login);
+  app.post(`/${ROUTES.USER}/${ROUTES.LOGIN}`, UserController.login);
 
   //delete own user profile
-  app.delete("/user", checkAuth, UserController.deleteUser);
+  app.delete(`/${ROUTES.USER}`, checkAuth, UserController.deleteUser);
 
   // get logged in user personal profile - completed questions
-  app.get('/user', checkAuth, UserController.getUser);
+  app.get(`/${ROUTES.USER}`, checkAuth, UserController.getUser);
 
   // edit user details
-  app.put('/user', checkAuth, UserController.editUser);
+  app.put(`/${ROUTES.USER}`, checkAuth, UserController.editUser);
 
   // search users on fname/lname/email autocomplete results limit 10
-  app.get('/user/autocomplete', UserController.autocompleteUser);
+  app.get(`/${ROUTES.USER}/${ROUTES.AUTOCOMPLETE}`, UserController.autocompleteUser);
 
   // user rank & performance details
-  app.get('/user/performance/:userId', UserController.getPeformance);
+  app.get(`/${ROUTES.USER}/${ROUTES.PERFORMANCE}/${ROUTES.USERID}`, UserController.getPeformance);
 };

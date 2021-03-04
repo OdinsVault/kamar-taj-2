@@ -1,19 +1,20 @@
 
-const CompeteController = require('../controllers/competeQuestion.controller');
+const CompeteController = require('../controllers/competeQuestion.controller'),
+      { ROUTES } = require('../resources/constants');
 
 module.exports = app => {
 
     //Get all compete questions
-    app.get("/competequestion", CompeteController.getAll);
+    app.get(`/${ROUTES.COMPETEQ}`, CompeteController.getAll);
 
     //Get compete questions by category
-    app.get("/competequestion/bycategory", CompeteController.getByCategory);
+    app.get(`/${ROUTES.COMPETEQ}/${ROUTES.BYCATGEORY}`, CompeteController.getByCategory);
 
     // Get by id
-    app.get('/competequestion/:questionId', CompeteController.getOne);
+    app.get(`/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`, CompeteController.getOne);
 
     // Create compete questions
     // TODO: Move to admin routes
-    app.post('/competequestion', CompeteController.createCompeteQuestion);
+    app.post(`/${ROUTES.COMPETEQ}`, CompeteController.createCompeteQuestion);
 
 }

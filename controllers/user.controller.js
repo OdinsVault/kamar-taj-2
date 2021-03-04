@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ExceptionHandler = require("../exceptions/ExceptionHandler");
-const { findOneAndUpdate } = require("../models/user");
+const { ROUTES } = require("../resources/constants");
 
 //Signup User
 exports.signup = (req, res, next) => {
@@ -59,7 +59,7 @@ exports.signup = (req, res, next) => {
 };
 
 //Login
-exports.login = (req, res, next) => {
+exports.login = (req, res) => {
   User.findOne({ email: req.body.email })
     .exec()
     .then((user) => {
@@ -193,7 +193,7 @@ exports.editUser = async (req, res) => {
     delete updatedUser.__v;
     delete updatedUser.password;
 
-    res.status(200).json(updatedUser);
+    res.status(200).json({message: 'User updated', updated: updatedUser});
   } catch (err) {
       console.log(err);
       res.status(500).json({status: 'Error occured', err});
@@ -278,7 +278,7 @@ exports.autocompleteUser = async (req, res) => {
  * @param {Response} res 
  */
 exports.getPeformance = async (req, res) => {
-  if (!req.params.userId) return res.status(400).json({status: 'User id not presented'});
+  if (!req.params[ROUTES.USERID]) return res.status(400).json({status: 'User id not presented'});
 
   try {
     const user = await User.aggregate([
@@ -291,7 +291,7 @@ exports.getPeformance = async (req, res) => {
           score: '$ranked.score',
           completion: '$ranked.completion',
           rank: 1 } },
-      {$match: { _id: mongoose.Types.ObjectId(req.params.userId) }},
+      {$match: { _id: mongoose.Types.ObjectId(req.params[ROUTES.USERID]) }},
     ]);
 
     if (!user) return res.status(404).json({status: 'User not found'});

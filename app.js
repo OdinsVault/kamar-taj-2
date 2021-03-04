@@ -48,6 +48,7 @@ require("./routes/practiceQuestion.routes")(app);
 require("./routes/competeQuestion.routes")(app);
 require("./routes/user.routes")(app);
 require("./routes/leaderboard.routes")(app);
+require("./routes/answer.routes")(app);
 
 app.use((req, res, next) => {
   const error = new Error("Not Found!");

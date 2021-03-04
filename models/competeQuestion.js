@@ -8,6 +8,7 @@ const competeQuestionSchema = mongoose.Schema({
   outputs: { type: String, required: true },
   difficulty: { type: String, required: true },
   category: { type: String, required: true },
+  pointsAllocated: { type: Number, required: true },
   testcases: [{
     inputs: String,
     outputs: String,

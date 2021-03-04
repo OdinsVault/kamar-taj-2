@@ -1,5 +1,6 @@
 
-const CompeteQ = require('../models/competeQuestion');
+const CompeteQ = require('../models/competeQuestion'),
+      { ROUTES } = require('../resources/constants');
 
 /**
  * Get all compete questions
@@ -65,7 +66,7 @@ exports.getByCategory = async (req, res) => {
  * @param {Response} res 
  */
 exports.getOne = async (req, res) => {
-    const id = req.params.questionId;
+    const id = req.params[ROUTES.QUESTIONID];
     if (!id || id === '') return res.status(400).json({message: 'Question id not present'});
 
     try {
@@ -96,7 +97,8 @@ exports.createCompeteQuestion = async (req, res) => {
         outputs: req.body.outputs,
         difficulty: req.body.difficulty,
         category: req.body.category,
-        testcases: req.body.testcases
+        testcases: req.body.testcases,
+        pointsAllocated: req.body.pointsAllocated,
       });
 
       try {
