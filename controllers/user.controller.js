@@ -224,7 +224,7 @@ exports.autocompleteUser = async (req, res) => {
                 path: "fname",
                 fuzzy: {
                     maxEdits: 2,
-                    prefixLength: 3
+                    prefixLength: 2
                   }
                 }
               },
@@ -234,7 +234,7 @@ exports.autocompleteUser = async (req, res) => {
                 path: "lname",
                 fuzzy: {
                     maxEdits: 2,
-                    prefixLength: 3
+                    prefixLength: 2
                   }
                 }
               },
@@ -244,7 +244,7 @@ exports.autocompleteUser = async (req, res) => {
                 path: "email",
                 fuzzy: {
                     maxEdits: 2,
-                    prefixLength: 3
+                    prefixLength: 2
                   }
                 }
               },

@@ -4,14 +4,14 @@ const LeaderboardController = require("../controllers/leaderboard.controller"),
 module.exports = (app) => {
 
     // get the leaderboard with pagination
-    app.get(`${ROUTES.LEADERBOARD}`, LeaderboardController.rankings);
+    app.get(`/${ROUTES.LEADERBOARD}`, LeaderboardController.rankings);
 
     // filter on score, institute
-    app.get(`${ROUTES.LEADERBOARD}/${ROUTES.FILTER}`, LeaderboardController.filterLeaderboard);
+    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.FILTER}`, LeaderboardController.filterLeaderboard);
 
     // get distinct institute values for institute filter
-    app.get(`${ROUTES.LEADERBOARD}/${ROUTES.DISTINCTINSTITUTES}`, LeaderboardController.distinctInstitutes);
+    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.DISTINCTINSTITUTES}`, LeaderboardController.distinctInstitutes);
 
     // get specific user ranking in leaderboard
-    app.get(`${ROUTES.LEADERBOARD}/${ROUTES.USERID}`, LeaderboardController.getUserRanking);
+    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.USERID}`, LeaderboardController.getUserRanking);
 };
