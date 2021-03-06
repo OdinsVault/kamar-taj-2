@@ -96,7 +96,7 @@ exports.filterLeaderboard = async (req, res) => {
     match.$match.$and.push({ 'ranked.institute': req.query.i });
   }
   if (req.query.s) {
-    match.$match.$and.push({ 'ranked.score': Number(req.query.s) });
+    match.$match.$and.push({ 'ranked.score': parseInt(req.query.s) });
   }
   if (!req.query.i && !req.query.s) delete match.$match.$and;
 

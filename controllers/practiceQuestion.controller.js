@@ -37,6 +37,8 @@ exports.get_all = (req, res, next) => {
 //get question by level
 exports.get_by_level = (req, res, next) => {
   PracticeQ.aggregate([
+    { $unset: '__v' },
+    { $sort: { level: -1 } },
     { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
   ])
     .exec()
@@ -50,7 +52,7 @@ exports.get_by_level = (req, res, next) => {
           };
         }),
       };
-      res.status(201).json(response);
+      res.status(200).json(response);
     })
     .catch((err) => {
       console.log(err);
@@ -122,7 +124,7 @@ exports.update_question = async (req, res) => {
 
   try {
     const updatedQ = await PracticeQ
-      .findOneAndUpdate({_id: id}, req.body, {new: true});
+      .findOneAndUpdate({_id: id}, req.body, {new: true}).select('-__v');
 
     if (!updatedQ) return res.status(404).json({status: 'Question not found'});
 

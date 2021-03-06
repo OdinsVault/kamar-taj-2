@@ -185,13 +185,10 @@ exports.editUser = async (req, res) => {
     req.body.password = hashed;
 
     const updatedUser = await User
-      .findOneAndUpdate({ _id: req.userData.userId }, req.body, { new: true });
+      .findOneAndUpdate({ _id: req.userData.userId }, req.body, { new: true })
+      .select('-__v -password');
 
     if (!updatedUser) return res.status(404).json({status: 'User not found'});
-
-    // delete unnecessary fields from updated response
-    delete updatedUser.__v;
-    delete updatedUser.password;
 
     res.status(200).json({message: 'User updated', updated: updatedUser});
   } catch (err) {
