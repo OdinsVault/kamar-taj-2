@@ -15,7 +15,7 @@ const practiceQuestionSchema = mongoose.Schema({
     title: String,
     description: String,
   }],
-  level: { type: String, required: true }
+  level: { type: Number, required: true }
 });
 
 module.exports = mongoose.model("PracticeQuestion", practiceQuestionSchema);

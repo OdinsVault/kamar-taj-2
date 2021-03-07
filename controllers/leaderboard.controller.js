@@ -123,7 +123,7 @@ exports.filterLeaderboard = async (req, res) => {
     usersList.map(doc => doc.rank++);
 
     const response = {
-      filter: {score: req.query.s, institute: req.query.i},
+      filter: {score: parseInt(req.query.s), institute: req.query.i},
       results: usersList
     }
 

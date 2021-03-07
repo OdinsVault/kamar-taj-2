@@ -18,7 +18,7 @@ exports.getAll = async (req, res) => {
                     ...q._doc,
                     request: {
                         type: 'GET',
-                        url: `${process.env.BASE_URL}/competequestion/${q._id}`
+                        url: `${process.env.BASE_URL}/${ROUTES.COMPETEQ}/${q._id}`
                     }
                 }
             }),
@@ -40,7 +40,8 @@ exports.getByCategory = async (req, res) => {
     try {
         const questions = await CompeteQ.aggregate([
             { $project: { __v: 0 } },
-            { $group: { _id: '$category', questions: { $push: '$$ROOT' } } }
+            { $group: { _id: '$category', questions: { $push: '$$ROOT' } } },
+            { $sort: { _id: 1 } }
         ]);
 
         const response = {
@@ -109,7 +110,7 @@ exports.createCompeteQuestion = async (req, res) => {
             created: saved,
             request: {
               type: "GET",
-              url: process.env.BASE_URL + "/competequestion/" + result._id,
+              url: `${process.env.BASE_URL}/${ROUTES.COMPETEQ}/${saved._id}`,
             },
           });
         

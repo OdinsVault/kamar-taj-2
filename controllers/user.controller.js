@@ -4,9 +4,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ExceptionHandler = require("../exceptions/ExceptionHandler");
 const { ROUTES } = require("../resources/constants");
+const constants = require("../resources/constants");
 
 //Signup User
-exports.signup = (req, res, next) => {
+exports.signup = (req, res) => {
   User.find({ email: req.body.email })
     .exec()
     .then((user) => {
@@ -154,7 +155,15 @@ exports.getUser = async (req, res) => {
     let user;
 
     if (isPopulate) {
-      user = await query.populate('finished.practice', '-__v').populate('finished.compete', '-__v');
+      user = await query
+        .populate({
+            path: 'attempts.practice',
+            populate: [{ path: 'question', select: '-__v' }]
+        })
+        .populate({
+            path: 'attempts.compete',
+            populate: [{ path: 'question', select: '-__v' }]
+        });
     } else {
       user = await query;
     }
@@ -176,16 +185,27 @@ exports.getUser = async (req, res) => {
 exports.editUser = async (req, res) => {
   if (!req.body) return res.status(400).json({status: 'No update body present'});
   // remove unnecessary fields from update
-  delete req.body.finished;
+  delete req.body.attempts;
   delete req.body.score;
   delete req.body.completion;
 
+  // create the update object
+  const userUpdate = {
+    fname: req.body.fname,
+    lname: req.body.lname,
+    email: req.body.email,
+    password: req.body.password,
+    dob: new Date(req.body.dob),
+    institute: req.body.institute,
+    xp: Object.values(constants.XP).find(xp => req.body.xp === xp) || constants.XP.BEGINNER,
+  }
+
   try {
-    const hashed = await bcrypt.hash(req.body.password, 10);
-    req.body.password = hashed;
+    const hashed = await bcrypt.hash(userUpdate.password, 10);
+    userUpdate.password = hashed;
 
     const updatedUser = await User
-      .findOneAndUpdate({ _id: req.userData.userId }, req.body, { new: true })
+      .findOneAndUpdate({ _id: req.userData.userId }, userUpdate, { new: true })
       .select('-__v -password');
 
     if (!updatedUser) return res.status(404).json({status: 'User not found'});

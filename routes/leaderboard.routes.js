@@ -13,5 +13,5 @@ module.exports = (app) => {
     app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.DISTINCTINSTITUTES}`, LeaderboardController.distinctInstitutes);
 
     // get specific user ranking in leaderboard
-    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.USERID}`, LeaderboardController.getUserRanking);
+    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.USERIDPARAM}`, LeaderboardController.getUserRanking);
 };

@@ -3,9 +3,10 @@ const mongoose = require("mongoose");
 const { ROUTES } = require("../resources/constants");
 
 //Get all questions
-exports.get_all = (req, res, next) => {
+exports.get_all = (req, res) => {
   PracticeQ.find()
     .select("_id title description inputs outputs difficulty level category")
+    .sort('level')
     .exec()
     .then((docs) => {
       const response = {
@@ -19,7 +20,7 @@ exports.get_all = (req, res, next) => {
             level: doc.level,
             request: {
               type: "GET",
-              url: process.env.BASE_URL + "/questions/" + doc._id,
+              url: `${process.env.BASE_URL}/${constants.ROUTES.PRACTICEQ}/${doc._id}`,
             },
           };
         }),
@@ -35,11 +36,11 @@ exports.get_all = (req, res, next) => {
 };
 
 //get question by level
-exports.get_by_level = (req, res, next) => {
+exports.get_by_level = (req, res) => {
   PracticeQ.aggregate([
     { $unset: '__v' },
-    { $sort: { level: -1 } },
     { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
+    { $sort: { _id: 1 } },
   ])
     .exec()
     .then((docs) => {
@@ -105,7 +106,7 @@ exports.create_question = (req, res) => {
         created: result,
         request: {
           type: "GET",
-          url: process.env.BASE_URL + "/questions/" + result._id,
+          url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${result._id}`,
         },
       });
     })
@@ -133,7 +134,7 @@ exports.update_question = async (req, res) => {
       updated: updatedQ,
       request: {
         type: 'GET',
-        url: `${process.env.BASE_URL}/questions/${id}`,
+        url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
       },
     }
 
@@ -157,7 +158,7 @@ exports.delete_question = (req, res) => {
         request: {
           type: "POST",
           description: "You can create a question with this URL",
-          url: process.env.BASE_URL + "/questions/",
+          url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/`,
         },
       });
     })

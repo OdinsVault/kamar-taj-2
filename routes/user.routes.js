@@ -23,5 +23,5 @@ module.exports = (app) => {
   app.get(`/${ROUTES.USER}/${ROUTES.AUTOCOMPLETE}`, UserController.autocompleteUser);
 
   // user rank & performance details
-  app.get(`/${ROUTES.USER}/${ROUTES.PERFORMANCE}/${ROUTES.USERID}`, UserController.getPeformance);
+  app.get(`/${ROUTES.USER}/${ROUTES.PERFORMANCE}/${ROUTES.USERIDPARAM}`, UserController.getPeformance);
 };

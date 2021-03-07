@@ -13,6 +13,7 @@ module.exports = Object.freeze({
         AUTOCOMPLETE: 'autocomplete',
         PERFORMANCE: 'performance',
         USERID: 'userId',
+        USERIDPARAM: ':userId',
         // competeQuestion.routes
         COMPETEQ: 'competequestion',
         BYCATGEORY: 'bycategory',
