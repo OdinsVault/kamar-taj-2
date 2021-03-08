@@ -2,6 +2,8 @@ const User = require('../models/user'),
       PracticeQ = require('../models/practiceQuestion'),
     //   CompeteQ = require('../models/competeQuestion'),
       mongoose = require("mongoose"),
+      exec = require('child_process').execSync,
+      fs = require('fs'),
       {ROUTES} = require('../resources/constants');
 
 
@@ -35,9 +37,30 @@ exports.practiceAnswer = async (req, res) => {
         const output = {
             answer: req.body.answer,
             testCases,
-            passed: true,
+            passed: false,
+            compilerResult: {
+                status: 0,
+                stdout: '',
+                stderr: '',
+            },
         };
-        // TODO: Run the code here & get the results
+
+        // // -----------------------------------------
+        // // TODO: Run the code here & get the results
+        // try {
+        //     fs.writeFileSync(`Code.java`, req.body.answer); // create temp file with code
+        //     exec('javac Code.java', {encoding: 'utf-8'}); // compile
+        //     const results = exec('java Code', {encoding: 'utf-8'}); // run
+        //     output.compilerResult.stdout = results;
+        // } catch (err) { // set the error values to output object
+        //     output.compilerResult.status = err.status;
+        //     output.compilerResult.stdout = err.stdout;
+        //     output.compilerResult.stderr = err.stderr;
+        // }
+        // // set passed status by checking errors from code output
+        // if (output.compilerResult.stderr === '')
+        //     output.passed = true;
+        // // -----------------------------------------
 
         const response = {
             message: output.passed? 'Practice question answer passed':'Practice question answer failed',
