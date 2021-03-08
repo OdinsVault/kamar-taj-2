@@ -3,7 +3,9 @@
     "PORT": 8080,
     "MONGO_ATLAS_PW": 1994,
     "BASE_URL": "http://localhost:8080",
-    "JWT_KEY": "secret"
+    "JWT_KEY": "secret",
+    "ADMIN_EMAILS": "khkadmin@gmail.com,hasi@gmail.com",
+    "ADMIN_PASSWORDS": "khkadmin,hasi"
   },
 
   "events": {

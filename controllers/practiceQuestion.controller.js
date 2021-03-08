@@ -19,7 +19,7 @@ exports.get_all = (req, res) => {
             level: doc.level,
             request: {
               type: "GET",
-              url: `${process.env.BASE_URL}/${constants.ROUTES.PRACTICEQ}/${doc._id}`,
+              url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${doc._id}`,
             },
           };
         }),

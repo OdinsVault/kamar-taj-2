@@ -1,7 +1,43 @@
 const PracticeQ = require("../models/practiceQuestion"),
       CompeteQ = require("../models/competeQuestion"),
+      User = require("../models/user"),
       mongoose = require("mongoose"),
-      { ROUTES } = require("../resources/constants");
+      jwt = require("jsonwebtoken"),
+      { ROUTES, ROLE } = require("../resources/constants");
+
+// Login route for admin accounts
+exports.login = async (req, res) => {
+
+    // check if the user is an admin
+    const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+    const adminPasswords = process.env.ADMIN_PASSWORDS?.split(',') || [];
+
+    const emailIndex = adminEmails.findIndex(email => email === req.body.email);
+    if (emailIndex < 0) return res.status(401).json({message: 'Admin auth failed'});
+
+    const password = adminPasswords[emailIndex];
+    if (!password || (password !== req.body.password)) 
+        return res.status(401).json({message: 'Admin auth failed'});
+
+    
+    // generate token
+    const token = jwt.sign(
+        {
+            email: adminEmails[emailIndex],
+            userId: null,
+            roles: [ROLE.ADMIN]
+        },
+        process.env.JWT_KEY,
+        {
+            expiresIn: "1h",
+        }
+      );
+
+    res.status(200).json({
+        message: 'Admin auth success',
+        token,
+    });
+}
 
 // Practice Question admin handlers
 exports.createPracticeQ = async (req, res) => {
@@ -69,10 +105,20 @@ exports.deletePracticeQ = async (req, res) => {
     if (!id || id === '') return res.status(400).json({message: 'Question id is not present'});
 
     try {
+        // remove the references for this question from user attempts
+        const userUpdate = await User.updateMany(
+                {'attempts.practice.question': id},
+                {$pull: {'attempts.practice': {question: id}}}
+            );
+        
         await PracticeQ.deleteOne({_id: id});
         
         res.status(200).json({
             message: 'Practice question deleted!',
+            usersAffected: {
+                matchedUsers: userUpdate.n,
+                modifiedUsers: userUpdate.nModified
+            },
             request: {
                 type: 'POST',
                 description: 'You can create a question with this URL',
@@ -151,10 +197,20 @@ exports.deleteCompeteQ = async (req, res) => {
     if (!id || id === '') return res.status(400).json({message: 'Question id is not present'});
 
     try {
+        // remove the references for this question from user attempts
+        const userUpdate = await User.updateMany(
+                {'attempts.compete.question': id},
+                {$pull: {'attempts.compete': {question: id}}}
+            );
+
         await CompeteQ.deleteOne({_id: id});
         
         res.status(200).json({
             message: 'Compete question deleted!',
+            usersAffected: {
+                matchedUsers: userUpdate.n,
+                modifiedUsers: userUpdate.nModified
+            },
             request: {
                 type: 'POST',
                 description: 'You can create a question with this URL',

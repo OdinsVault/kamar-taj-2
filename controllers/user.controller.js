@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ExceptionHandler = require("../exceptions/ExceptionHandler");
-const { ROUTES } = require("../resources/constants");
-const constants = require("../resources/constants");
+const { ROUTES, XP, ROLE } = require("../resources/constants");
 
 //Signup User
 exports.signup = (req, res) => {
@@ -80,6 +79,7 @@ exports.login = (req, res) => {
             {
               email: user.email,
               userId: user._id,
+              roles: [ROLE.USER]
             },
             process.env.JWT_KEY,
             {
@@ -197,7 +197,7 @@ exports.editUser = async (req, res) => {
     password: req.body.password,
     dob: new Date(req.body.dob),
     institute: req.body.institute,
-    xp: Object.values(constants.XP).find(xp => req.body.xp === xp) || constants.XP.BEGINNER,
+    xp: Object.values(XP).find(xp => req.body.xp === xp) || XP.BEGINNER,
   }
 
   try {

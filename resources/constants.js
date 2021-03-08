@@ -5,6 +5,12 @@ module.exports = Object.freeze({
         ADVANCED: 'Advanced',
     },
 
+    // App roles
+    ROLE: {
+        ADMIN: 'admin',
+        USER: 'user',
+    },
+
     ROUTES: {
         // user.routes
         USER: 'user',

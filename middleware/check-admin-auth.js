@@ -4,12 +4,12 @@ const constants = require("../resources/constants");
 module.exports = (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
-    console.log(token);
+    console.log('Admin:', token);
     const decoded = jwt.verify(token, process.env.JWT_KEY);
 
-    // check if the user is an admin - if admin user consumable APIs are restricted
-    if (decoded.roles?.includes(constants.ROLE.ADMIN))
-      return res.status(401).json({message: 'User authorization failed'});
+    // check if the token has the admin role
+    if (!decoded.roles?.includes(constants.ROLE.ADMIN))
+        return res.status(401).json({message: 'Admin authorization failed'});
 
     req.userData = decoded;
     next();
