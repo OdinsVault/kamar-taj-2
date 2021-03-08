@@ -82,43 +82,4 @@ exports.getOne = async (req, res) => {
     }
 }
 
-/**
- * Create compete question
- * @param {Request} req 
- * @param {Response} res 
- */
-exports.createCompeteQuestion = async (req, res) => {
-    const mongoose = require('mongoose');
 
-    const question = new CompeteQ({
-        _id: new mongoose.Types.ObjectId(),
-        title: req.body.title,
-        description: req.body.description,
-        inputs: req.body.inputs,
-        outputs: req.body.outputs,
-        difficulty: req.body.difficulty,
-        category: req.body.category,
-        testcases: req.body.testcases,
-        pointsAllocated: req.body.pointsAllocated,
-      });
-
-      try {
-        const saved = await question.save();
-        
-        res.status(201).json({
-            message: "CompeteQ saved successfully!",
-            created: saved,
-            request: {
-              type: "GET",
-              url: `${process.env.BASE_URL}/${ROUTES.COMPETEQ}/${saved._id}`,
-            },
-          });
-        
-      } catch (err) {
-        console.log(err);
-        res.status(500).json({
-          error: err,
-        });
-      }
-
-}

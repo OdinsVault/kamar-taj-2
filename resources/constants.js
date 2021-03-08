@@ -30,5 +30,7 @@ module.exports = Object.freeze({
         LEADERBOARD: 'leaderboard',
         FILTER: 'filter',
         DISTINCTINSTITUTES: 'distinctinstitutes',
+        // admin.routes
+        ADMIN: 'admin',
     }
 });

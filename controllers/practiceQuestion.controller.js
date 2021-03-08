@@ -1,6 +1,5 @@
-const PracticeQ = require("../models/practiceQuestion");
-const mongoose = require("mongoose");
-const { ROUTES } = require("../resources/constants");
+const PracticeQ = require("../models/practiceQuestion"),
+      { ROUTES } = require("../resources/constants");
 
 //Get all questions
 exports.get_all = (req, res) => {
@@ -83,89 +82,4 @@ exports.get_one = (req, res) => {
     });
 };
 
-//Create question
-exports.create_question = (req, res) => {
-  const question = new PracticeQ({
-    _id: new mongoose.Types.ObjectId(),
-    title: req.body.title,
-    description: req.body.description,
-    inputs: req.body.inputs,
-    outputs: req.body.outputs,
-    difficulty: req.body.difficulty,
-    level: req.body.level,
-    category: req.body.category,
-    testcases: req.body.testcases,
-    pointsAllocated: req.body.pointsAllocated,
-  });
 
-  question
-    .save()
-    .then((result) => {
-      res.status(201).json({
-        message: "PracticeQ saved successfully!",
-        created: result,
-        request: {
-          type: "GET",
-          url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${result._id}`,
-        },
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        error: err,
-      });
-    });
-};
-
-//Update question
-exports.update_question = async (req, res) => {
-  const id = req.params[ROUTES.QUESTIONID];
-  if (!id || id === '') return res.status(400).json({message: 'Question id is not present'});
-
-  try {
-    const updatedQ = await PracticeQ
-      .findOneAndUpdate({_id: id}, req.body, {new: true}).select('-__v');
-
-    if (!updatedQ) return res.status(404).json({status: 'Question not found'});
-
-    const response = {
-      message: 'Question updated!',
-      updated: updatedQ,
-      request: {
-        type: 'GET',
-        url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
-      },
-    }
-
-    res.status(200).json(response);
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({error: err});
-  }
-};
-
-//Delete question
-
-exports.delete_question = (req, res) => {
-  const id = req.params[ROUTES.QUESTIONID];
-  PracticeQ.deleteOne({ _id: id })
-    .exec()
-    .then((_) => {
-      res.status(200).json({
-        message: "Question deleted!",
-        request: {
-          type: "POST",
-          description: "You can create a question with this URL",
-          url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/`,
-        },
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        error: err,
-      });
-    });
-};

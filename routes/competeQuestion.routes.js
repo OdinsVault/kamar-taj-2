@@ -13,8 +13,4 @@ module.exports = app => {
     // Get by id
     app.get(`/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`, CompeteController.getOne);
 
-    // Create compete questions
-    // TODO: Move to admin routes
-    app.post(`/${ROUTES.COMPETEQ}`, CompeteController.createCompeteQuestion);
-
 }
