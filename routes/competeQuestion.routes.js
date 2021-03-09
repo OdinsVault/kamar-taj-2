@@ -1,16 +1,16 @@
 
 const CompeteController = require('../controllers/competeQuestion.controller'),
+      router = require('express').Router(),
       { ROUTES } = require('../resources/constants');
 
-module.exports = app => {
+//Get all compete questions
+router.get(`/`, CompeteController.getAll);
 
-    //Get all compete questions
-    app.get(`/${ROUTES.COMPETEQ}`, CompeteController.getAll);
+//Get compete questions by category
+router.get(`/${ROUTES.BYCATGEORY}`, CompeteController.getByCategory);
 
-    //Get compete questions by category
-    app.get(`/${ROUTES.COMPETEQ}/${ROUTES.BYCATGEORY}`, CompeteController.getByCategory);
+// Get by id
+router.get(`/${ROUTES.QUESTIONIDPARAM}`, CompeteController.getOne);
 
-    // Get by id
-    app.get(`/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`, CompeteController.getOne);
 
-}
+module.exports = router;

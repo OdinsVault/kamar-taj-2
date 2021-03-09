@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
-const bodyParser = require("body-parser");
 
 const mongoose = require("mongoose");
 
@@ -16,8 +15,8 @@ mongoose.connect(
 );
 
 app.use(morgan("dev"));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
 
 //CORSE Error prevention
 app.use((req, res, next) => {
@@ -44,25 +43,17 @@ app.get("/", (req, res) => {
 });
 
 //Routes>>>>>>>>>>>>>>>>
-require("./routes/practiceQuestion.routes")(app);
-require("./routes/competeQuestion.routes")(app);
-require("./routes/user.routes")(app);
-require("./routes/leaderboard.routes")(app);
-require("./routes/answer.routes")(app);
-require("./routes/admin.routes")(app);
+app.use('/v1', require('./routes'));
 
-app.use((req, res, next) => {
-  const error = new Error("Not Found!");
-  next(error);
-});
 
-app.use((error, req, res, next) => {
-  res.status(500);
-  res.json({
+// Handle unmatched routes
+app.use((req, res) => {
+  res.status(500).json({
     error: {
-      message: error.message,
+      message: 'Not found!',
     },
   });
 });
 
-module.exports = app;
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log(`Server listening on port ${port}!`));

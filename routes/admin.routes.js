@@ -1,54 +1,52 @@
 const AdminController = require('../controllers/admin.controller'),
-      checkAdminAuth = require('../middleware/check-admin-auth'),
+      adminAuth = require('../middleware/check-admin-auth'),
+      router = require('express').Router(),
       {ROUTES} = require('../resources/constants');
 
-module.exports = (app) => {
+// Admin login route
+router.post(
+    `/${ROUTES.LOGIN}`,
+    AdminController.login
+);
 
-    // TODO: Add admin auth middleware
+// Practice question administration
+// Create Practice question
+router.post(
+    `/${ROUTES.PRACTICEQ}`,
+    adminAuth,
+    AdminController.createPracticeQ);
 
-    // Admin login route
-    app.post(
-        `/${ROUTES.ADMIN}/${ROUTES.LOGIN}`,
-        AdminController.login
-    );
+// Update a practice question
+router.patch(
+    `/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    adminAuth,
+    AdminController.updatePracticeQ);
 
-    // Practice question administration
-    // Create Practice question
-    app.post(
-        `/${ROUTES.ADMIN}/${ROUTES.PRACTICEQ}`,
-        checkAdminAuth,
-        AdminController.createPracticeQ);
+// Delete a practice question
+router.delete(
+    `/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    adminAuth,
+    AdminController.deletePracticeQ);
 
-    // Update a practice question
-    app.patch(
-        `/${ROUTES.ADMIN}/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`,
-        checkAdminAuth,
-        AdminController.updatePracticeQ);
-    
-    // Delete a practice question
-    app.delete(
-        `/${ROUTES.ADMIN}/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`,
-        checkAdminAuth,
-        AdminController.deletePracticeQ);
+        
+// Compete question administration
+// Create compete question
+router.post(
+    `/${ROUTES.COMPETEQ}`,
+    adminAuth,
+    AdminController.createCompeteQ);
 
-            
-    // Compete question administration
-    // Create compete question
-    app.post(
-        `/${ROUTES.ADMIN}/${ROUTES.COMPETEQ}`,
-        checkAdminAuth,
-        AdminController.createCompeteQ);
+// Update compete question
+router.patch(
+    `/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    adminAuth,
+    AdminController.updateCompeteQ);
 
-    // Update compete question
-    app.patch(
-        `/${ROUTES.ADMIN}/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`,
-        checkAdminAuth,
-        AdminController.updateCompeteQ);
-    
-    // Delete compete question
-    app.delete(
-        `/${ROUTES.ADMIN}/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`,
-        checkAdminAuth,
-        AdminController.deleteCompeteQ);
+// Delete compete question
+router.delete(
+    `/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    adminAuth,
+    AdminController.deleteCompeteQ);
 
-}
+
+module.exports = router;

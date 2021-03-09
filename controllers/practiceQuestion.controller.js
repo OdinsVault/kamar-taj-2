@@ -4,7 +4,7 @@ const PracticeQ = require("../models/practiceQuestion"),
 //Get all questions
 exports.get_all = (req, res) => {
   PracticeQ.find()
-    .select("_id title description inputs outputs difficulty level category")
+    .select('-__v')
     .sort('level')
     .exec()
     .then((docs) => {
@@ -12,11 +12,7 @@ exports.get_all = (req, res) => {
         count: docs.length,
         questions: docs.map((doc) => {
           return {
-            id: doc._id,
-            title: doc.title,
-            description: doc.description,
-            difficulty: doc.difficulty,
-            level: doc.level,
+            ...doc._doc,
             request: {
               type: "GET",
               url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${doc._id}`,

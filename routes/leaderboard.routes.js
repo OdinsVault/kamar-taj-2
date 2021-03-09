@@ -1,17 +1,18 @@
 const LeaderboardController = require("../controllers/leaderboard.controller"),
+      router = require('express').Router(),
       {ROUTES} = require('../resources/constants');
 
-module.exports = (app) => {
+// get the leaderboard with pagination
+router.get(`/`, LeaderboardController.rankings);
 
-    // get the leaderboard with pagination
-    app.get(`/${ROUTES.LEADERBOARD}`, LeaderboardController.rankings);
+// filter on score, institute
+router.get(`/${ROUTES.FILTER}`, LeaderboardController.filterLeaderboard);
 
-    // filter on score, institute
-    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.FILTER}`, LeaderboardController.filterLeaderboard);
+// get distinct institute values for institute filter
+router.get(`/${ROUTES.DISTINCTINSTITUTES}`, LeaderboardController.distinctInstitutes);
 
-    // get distinct institute values for institute filter
-    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.DISTINCTINSTITUTES}`, LeaderboardController.distinctInstitutes);
+// get specific user ranking in leaderboard
+router.get(`/${ROUTES.USERIDPARAM}`, LeaderboardController.getUserRanking);
 
-    // get specific user ranking in leaderboard
-    app.get(`/${ROUTES.LEADERBOARD}/${ROUTES.USERIDPARAM}`, LeaderboardController.getUserRanking);
-};
+
+module.exports = router;

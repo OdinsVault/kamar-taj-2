@@ -1,21 +1,19 @@
 const AnswerController = require("../controllers/answer.controller"),
-      checkAuth = require('../middleware/check-auth'),
+      router = require('express').Router(),
       {ROUTES} = require('../resources/constants');
 
-module.exports = (app) => {
 
-    // Answer practice question
-    app.post(
-        `/${ROUTES.PRACTICEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
-        checkAuth,
-        AnswerController.practiceAnswer
-    );
+// Answer practice question
+router.post(
+    `/${ROUTES.PRACTICEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
+    AnswerController.practiceAnswer
+);
 
-    // Answer compete question
-    // app.post(
-    //     `/${ROUTES.COMPETEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
-    //     checkAuth,
-    //     AnswerController.competeAnswer
-    // );
+// Answer compete question
+// router.post(
+//     `/${ROUTES.COMPETEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
+//     AnswerController.competeAnswer
+// );
 
-};
+
+module.exports = router;

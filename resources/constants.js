@@ -11,6 +11,13 @@ module.exports = Object.freeze({
         USER: 'user',
     },
 
+    // Compete question difficulties
+    DIFFICULTY: {
+        EASY: 'Easy',
+        MEDIUM: 'Medium',
+        HARD: 'Hard',
+    },
+
     ROUTES: {
         // user.routes
         USER: 'user',
@@ -30,8 +37,9 @@ module.exports = Object.freeze({
         QUESTIONID: 'questionId',
         QUESTIONIDPARAM: ':questionId',
         // answer.routes
-        PRACTICEANSWER: 'practiceanswer',
-        COMPETEANSWER: 'competeanswer',
+        ANSWER: 'answer',
+        PRACTICEANSWER: 'practice',
+        COMPETEANSWER: 'compete',
         // leaderboard.routes
         LEADERBOARD: 'leaderboard',
         FILTER: 'filter',

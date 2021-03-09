@@ -1,14 +1,15 @@
 const PracticeController = require("../controllers/practiceQuestion.controller"),
+      router = require('express').Router(),
       {ROUTES} = require('../resources/constants');
 
-module.exports = (app) => {
-  //Get all questions
-  app.get(`/${ROUTES.PRACTICEQ}`, PracticeController.get_all);
+//Get all questions
+router.get('/', PracticeController.get_all);
 
-  //Get # of levels
-  app.get(`/${ROUTES.PRACTICEQ}/${ROUTES.BYLEVEL}`, PracticeController.get_by_level);
+//Get # of levels
+router.get(`/${ROUTES.BYLEVEL}`, PracticeController.get_by_level);
 
-  //get question by id
-  app.get(`/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`, PracticeController.get_one);
+//Get question by id
+router.get(`/${ROUTES.QUESTIONIDPARAM}`, PracticeController.get_one);
 
-};
+
+module.exports = router;
