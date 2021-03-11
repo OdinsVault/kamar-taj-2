@@ -10,10 +10,10 @@ router.post(
 );
 
 // Answer compete question
-// router.post(
-//     `/${ROUTES.COMPETEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
-//     AnswerController.competeAnswer
-// );
+router.post(
+    `/${ROUTES.COMPETEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
+    AnswerController.competeAnswer
+);
 
 
 module.exports = router;

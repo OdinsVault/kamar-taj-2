@@ -7,8 +7,8 @@ exports.rankings = async (req, res) => {
         limit = (req.query.limit)? Number(req.query.limit) : 10;
     try {
         const userList = await User.aggregate([
-          { $project: { password: 0, __v: 0 } },
           { $sort: { score: -1 } },
+          { $project: { password: 0, __v: 0 } },
           { $group: { _id: '', ranked: { $push: '$$ROOT'}, total: { $sum: 1 } } },
           { $unwind: { path: '$ranked', includeArrayIndex: 'rank' } },
           { $skip: page * limit },
@@ -55,8 +55,8 @@ exports.getUserRanking = async (req, res) => {
 
   try {
     const user = await User.aggregate([
-      { $project: { password: 0, __v: 0 } },
       { $sort: { score: -1 } },
+      { $project: { password: 0, __v: 0 } },
       { $group: { _id: '', ranked: { $push: '$$ROOT'} } },
       { $unwind: { path: '$ranked', includeArrayIndex: 'rank' } },
       { $match: { 'ranked._id': mongoose.Types.ObjectId(req.params.userId) } },
@@ -102,8 +102,8 @@ exports.filterLeaderboard = async (req, res) => {
 
   try {
     const usersList = await User.aggregate([
-      { $project: { password: 0, __v: 0 } },
       { $sort: { score: -1 } },
+      { $project: { password: 0, __v: 0 } },
       { $group: { _id: '', ranked: { $push: '$$ROOT'} } },
       { $unwind: { path: '$ranked', includeArrayIndex: 'rank' } },
       match,
