@@ -27,7 +27,10 @@ exports.getAll = async (req, res) => {
         res.status(200).json(response);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({
+            message: 'Error occurred while fetching compete questions',
+            error: err
+        });
     }
 }
 
@@ -57,7 +60,10 @@ exports.getByCategory = async (req, res) => {
         res.status(200).json(response);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({
+            message: 'Error occurred while fetching compete questions by category',
+            error: err
+        });
     }
 }
 
@@ -78,7 +84,10 @@ exports.getOne = async (req, res) => {
         res.status(200).json(question);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({
+            message: 'Error occurred while fetching compete question by Id',
+            error: err
+        });
     }
 }
 

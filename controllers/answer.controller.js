@@ -159,7 +159,10 @@ exports.practiceAnswer = async (req, res) => {
   
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while processing answer for practice question',
+            error: err
+        });
     }
 }
 
@@ -271,6 +274,9 @@ exports.competeAnswer = async (req, res) => {
 
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while processing answer for compete question',
+            error: err
+        });
     }
 }

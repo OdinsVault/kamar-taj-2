@@ -27,7 +27,7 @@ exports.rankings = async (req, res) => {
               } },
         ]);
 
-        if (!userList) return res.status(404).json({status: 'Rankings could not be retreived'});
+        if (!userList) return res.status(404).json({message: 'Rankings could not be retreived'});
 
         const total = userList[0].total;
         userList.map(doc => {
@@ -36,22 +36,24 @@ exports.rankings = async (req, res) => {
         });
 
         const response = {
+          message: 'Leaderboard fetch success',
           pageInfo: { total, page, limit },
           results: userList
         }
 
         return res.status(200).json(response);
       } catch (err) {
-        console.log(err);
+          console.log(err);
           res.status(500).json({
-            error: err,
-          });
+            message: 'Error occurred while fetching leaderboard',
+            error: err
+        });
       }
 }
 
 // search the leaderboard for user & get ranking details
 exports.getUserRanking = async (req, res) => {
-  if (!req.params.userId) return res.status(400).json({status: 'UserId is not present'});
+  if (!req.params.userId) return res.status(400).json({message: 'UserId is not present'});
 
   try {
     const user = await User.aggregate([
@@ -73,14 +75,17 @@ exports.getUserRanking = async (req, res) => {
           } },
     ]);
 
-    user[0].rank++;
+    if (user.length === 0) 
+      return res.status(404).json({message: 'User not found'});
 
+    user[0].rank++;
     res.status(200).json(user[0]);
 
   } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      error: err,
+      console.log(err);
+      res.status(500).json({
+        message: 'Error occurred while fetching user rank details',
+        error: err
     });
   }
 }
@@ -123,6 +128,7 @@ exports.filterLeaderboard = async (req, res) => {
     usersList.map(doc => doc.rank++);
 
     const response = {
+      message: 'Filter success',
       filter: {score: parseInt(req.query.s), institute: req.query.i},
       results: usersList
     }
@@ -130,9 +136,10 @@ exports.filterLeaderboard = async (req, res) => {
     res.status(200).json(response);
 
   } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      error: err,
+      console.log(err);
+      res.status(500).json({
+        message: 'Error occurred while filtering leaderboard',
+        error: err
     });
   }
 }
@@ -142,11 +149,15 @@ exports.distinctInstitutes = async (req, res) => {
   try {
     const distincts = await User.distinct("institute");
 
-    res.status(200).json(distincts);
+    res.status(200).json({
+      message: 'Distinct values fetched successfully',
+      distincts
+    });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      error: err,
+      console.log(err);
+      res.status(500).json({
+        message: 'Error occurred while fetching distinct institute values',
+        error: err
     });
   }
 }

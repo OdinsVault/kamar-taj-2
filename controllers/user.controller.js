@@ -18,6 +18,7 @@ exports.signup = (req, res) => {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
             return res.status(500).json({
+              message: 'Error occurred while creating user profile',
               error: err,
             });
           } else {
@@ -43,6 +44,7 @@ exports.signup = (req, res) => {
               .catch((err) => {
                 console.log(err);
                 res.status(500).json({
+                  message: 'Error occurred while saving user profile',
                   error: err,
                 });
               });
@@ -53,6 +55,7 @@ exports.signup = (req, res) => {
     .catch((err) => {
       console.log(err);
       res.status(500).json({
+        message: 'Error occurred while signing up',
         error: err,
       });
     });
@@ -106,12 +109,13 @@ exports.deleteUser = (req, res) => {
     .then(result => {
       res.status(200).json({
         message: "User deleted!",
-        status: result
+        result
       });
     })
     .catch((err) => {
       console.log(err);
       res.status(500).json({
+        message: 'Error occurred while deleting the profile',
         error: err,
       });
     });
@@ -168,12 +172,12 @@ exports.getUser = async (req, res) => {
       user = await query;
     }
 
-    if (!user) return res.status(404).json({status: 'User not found'});
+    if (!user) return res.status(404).json({message: 'User not found'});
 
     res.status(200).json(user);
   } catch (err) {
     console.log(err);
-    res.status(500).json({status: 'Error occured', err});
+    res.status(500).json({status: 'Error occured while fetching user data', err});
   }
 };
 
@@ -183,37 +187,52 @@ exports.getUser = async (req, res) => {
  * @param {Response} res 
  */
 exports.editUser = async (req, res) => {
-  if (!req.body) return res.status(400).json({status: 'No update body present'});
+  if (!req.body) return res.status(400).json({message: 'No update body present'});
   // remove unnecessary fields from update
   delete req.body.attempts;
   delete req.body.score;
   delete req.body.completion;
 
   // create the update object
-  const userUpdate = {
-    fname: req.body.fname,
-    lname: req.body.lname,
-    email: req.body.email,
-    password: req.body.password,
-    dob: new Date(req.body.dob),
-    institute: req.body.institute,
-    xp: Object.values(XP).find(xp => req.body.xp === xp) || XP.BEGINNER,
+  let userUpdate = {}
+  const updatableKeys = ['fname', 'lname', 'email', 'password', 'dob', 'institute', 'xp'];
+
+  for (const [key, val] of Object.entries(req.body)) {
+    if (updatableKeys.includes(key)) {
+      userUpdate[key] = val;
+    }
   }
+  // convert to necessary types
+  if (userUpdate.dob) userUpdate.dob = new Date(userUpdate.dob);
+  if (userUpdate.xp) userUpdate.xp = Object.values(XP).find(xp => userUpdate.xp === xp) || XP.BEGINNER;
 
   try {
-    const hashed = await bcrypt.hash(userUpdate.password, 10);
-    userUpdate.password = hashed;
+    // hash password if password changed
+    if (userUpdate.password) {
+      const hashed = await bcrypt.hash(userUpdate.password, 10);
+      userUpdate.password = hashed;
+    }
 
     const updatedUser = await User
       .findOneAndUpdate({ _id: req.userData.userId }, userUpdate, { new: true })
       .select('-__v -password');
 
-    if (!updatedUser) return res.status(404).json({status: 'User not found'});
+    if (!updatedUser) return res.status(404).json({message: 'User not found'});
 
-    res.status(200).json({message: 'User updated', updated: updatedUser});
+    res.status(200).json({message: 'User updated', result: updatedUser});
   } catch (err) {
       console.log(err);
-      res.status(500).json({status: 'Error occured', err});
+      // handle unique index - email
+      if (err.codeName && err.codeName === 'DuplicateKey') {
+        return res.status(409).json({
+          message: 'Error occured while updating user',
+          error: {
+            type: 'Duplicate value for unique attribute',
+            keyValue: err.keyValue,
+          }
+        });
+      }
+      res.status(500).json({message: 'Error occured while updating user', error: err});
   }
 }
 
@@ -226,7 +245,7 @@ exports.editUser = async (req, res) => {
  * @param {Response} res 
  */
 exports.autocompleteUser = async (req, res) => {
-  if (!req.query.search) return res.status(400).json({status: 'Search query is not present'});
+  if (!req.query.search) return res.status(400).json({message: 'Search query is not present'});
 
   try {
     const results = await User.aggregate([
@@ -283,6 +302,7 @@ exports.autocompleteUser = async (req, res) => {
   } catch (err) {
     console.log(err);
       res.status(500).json({
+        message: 'Error occurred while getting search results',
         error: err,
       });
   }
@@ -295,7 +315,7 @@ exports.autocompleteUser = async (req, res) => {
  * @param {Response} res 
  */
 exports.getPeformance = async (req, res) => {
-  if (!req.params[ROUTES.USERID]) return res.status(400).json({status: 'User id not presented'});
+  if (!req.params[ROUTES.USERID]) return res.status(400).json({message: 'User id not presented'});
 
   try {
     const user = await User.aggregate([
@@ -311,14 +331,15 @@ exports.getPeformance = async (req, res) => {
       {$match: { _id: mongoose.Types.ObjectId(req.params[ROUTES.USERID]) }},
     ]);
 
-    if (!user) return res.status(404).json({status: 'User not found'});
+    if (user.length === 0) return res.status(404).json({message: 'User not found'});
 
-    user.map(u => u.rank++);
-    return res.status(200).json(user);
+    user[0].rank++;
+    return res.status(200).json(user[0]);
 
   } catch (err) {
     console.log(err);
       res.status(500).json({
+        message: 'Error occurred while getting performance details',
         error: err,
       });
   }

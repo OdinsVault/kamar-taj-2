@@ -69,7 +69,10 @@ exports.createPracticeQ = async (req, res) => {
         res.status(201).json(response);
     } catch (err) {
         console.error(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while creating practice question',
+            error: err
+        });
     }
 }
 
@@ -81,22 +84,25 @@ exports.updatePracticeQ = async (req, res) => {
         const updatedQ = await PracticeQ
         .findOneAndUpdate({_id: id}, req.body, {new: true}).select('-__v');
 
-        if (!updatedQ) return res.status(404).json({status: 'Question not found'});
+        if (!updatedQ) return res.status(404).json({message: 'Question not found'});
 
         const response = {
-        message: 'Practice question updated!',
-        updated: updatedQ,
-        request: {
-            type: 'GET',
-            url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
-        },
+            message: 'Practice question updated!',
+            updated: updatedQ,
+            request: {
+                type: 'GET',
+                url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
+            },
         }
 
         res.status(200).json(response);
 
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while updating practice question',
+            error: err
+        });
     }
 }
 
@@ -127,7 +133,10 @@ exports.deletePracticeQ = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while deleting practice question',
+            error: err
+        });
     }
 }
 
@@ -161,7 +170,10 @@ exports.createCompeteQ = async (req, res) => {
         
       } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while creating compete question',
+            error: err
+        });
       }
 }
 
@@ -173,7 +185,7 @@ exports.updateCompeteQ = async (req, res) => {
         const updatedQ = await CompeteQ
             .findOneAndUpdate({_id: id}, req.body, {new: true}).select('-__v');
 
-        if (!updatedQ) return res.status(404).json({status: 'Question not found'});
+        if (!updatedQ) return res.status(404).json({message: 'Question not found'});
 
         const response = {
         message: 'Compete question updated!',
@@ -188,7 +200,10 @@ exports.updateCompeteQ = async (req, res) => {
 
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while updating compete question',
+            error: err
+        });
     }
 }
 
@@ -219,7 +234,10 @@ exports.deleteCompeteQ = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({
+            message: 'Error occurred while deleting compete question',
+            error: err
+        });
     }
 }
 

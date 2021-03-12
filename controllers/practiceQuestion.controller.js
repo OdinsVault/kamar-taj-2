@@ -20,7 +20,7 @@ exports.get_all = (req, res) => {
           };
         }),
       };
-      res.status(201).json(response);
+      res.status(200).json(response);
     })
     .catch((err) => {
       console.log(err);
