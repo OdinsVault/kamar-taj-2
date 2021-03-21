@@ -2,7 +2,7 @@ const {execSync} = require('child_process'),
       {join} = require('path'),
       {CODEDIR: codeDir} = require('../resources/constants'),
       {writeFileSync, unlink, stat} = require('fs');
-
+const util = require('util');
 /**
  * Compile the answer code & runs the test cases.
  * Populates the output object. 
@@ -29,6 +29,7 @@ const runTestCases = (testCases, output, mainClass, userId) => {
         output.compilerResult.stdout = execSync(`javac -d ${codeDir} ${filePath}`, {encoding: 'utf-8'});
 
         // try & run test cases
+        console.log('Testcases::: ', util.inspect(testCases));
         try {
             for (const test of testCases) {
                 // create result obj for this testcase
@@ -43,6 +44,7 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                 const results = execSync(`java -cp ${codeDir} ${className} ${test.inputs}`, {encoding: 'utf-8'});
                 console.log('Execution Result::: ', results);
                 console.log('Test output::: ', test.outputs);
+                console.log('Test passed::: ', test.outputs === results);
                 // check if the results with expected output for the testcase
                 // if any of the testcases fails, then ignore the rest & return failed state
                 if (test.outputs === results) {
@@ -52,6 +54,8 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                     output.testResults.push(testCaseResult);
                 } else break;
             }
+
+            console.log('Results::: ', util.inspect(output.testResults));
 
             // if all the testcases passed, mark question as passed
             if (output.testResults.length === testCases.length) 
