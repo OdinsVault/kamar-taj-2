@@ -41,7 +41,8 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                 
                 // execute the code with testcase
                 const results = execSync(`java -cp ${codeDir} ${className} ${test.inputs}`, {encoding: 'utf-8'});
-                
+                console.log('Execution Result::: ', results);
+                console.log('Test output::: ', test.outputs);
                 // check if the results with expected output for the testcase
                 // if any of the testcases fails, then ignore the rest & return failed state
                 if (test.outputs === results) {
