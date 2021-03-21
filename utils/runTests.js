@@ -23,7 +23,7 @@ const runTestCases = (testCases, output, mainClass, userId) => {
     try {
         // Replace the class name within the code &
         // create temp file with code
-        writeFileSync(filePath, output.answer.replace(new RegExp(`/${mainClass}/g`), className));
+        writeFileSync(filePath, output.answer.replace(new RegExp(mainClass, 'g'), className));
 
         // compile
         output.compilerResult.stdout = execSync(`javac -d ${codeDir} ${filePath}`, {encoding: 'utf-8'});
@@ -42,8 +42,8 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                 // execute the code with testcase
                 let results = execSync(`java -cp ${codeDir} ${className} ${test.inputs}`, {encoding: 'utf-8'});
                 // Remove unnecessary escape chars if any - Linux does not have \r
-                results = results.replace(new RegExp(/\r/g), '');
-                test.outputs = test.outputs.replace(new RegExp(/\r/g), '');
+                results = results.replace(new RegExp('\\r', 'g'), '');
+                test.outputs = test.outputs.replace(new RegExp('\\r', 'g'), '');
 
                 // check if the results with expected output for the testcase
                 // if any of the testcases fails, then ignore the rest & return failed state
