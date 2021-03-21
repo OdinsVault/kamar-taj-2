@@ -23,13 +23,12 @@ const runTestCases = (testCases, output, mainClass, userId) => {
     try {
         // Replace the class name within the code &
         // create temp file with code
-        writeFileSync(filePath, output.answer.replace(mainClass, className));
+        writeFileSync(filePath, output.answer.replace(new RegExp(`/${mainClass}/g`), className));
 
         // compile
         output.compilerResult.stdout = execSync(`javac -d ${codeDir} ${filePath}`, {encoding: 'utf-8'});
 
         // try & run test cases
-        console.log('Testcases::: ', util.inspect(testCases));
         try {
             for (const test of testCases) {
                 // create result obj for this testcase
@@ -41,16 +40,14 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                 };
                 
                 // execute the code with testcase
-                const results = execSync(`java -cp ${codeDir} ${className} ${test.inputs}`, {encoding: 'utf-8'});
-                console.log('Execution Result::: ', results);
-                console.log('Execution Result::: ', JSON.stringify(results));
-                console.log('Test output::: ', test.outputs);
-                console.log('Test output::: ', JSON.stringify(test.outputs));
-                console.log('Test passed::: ', test.outputs.trim() == results.trim());
-                console.log('Test passed::: ', JSON.stringify(test.outputs) == JSON.stringify(results));
+                let results = execSync(`java -cp ${codeDir} ${className} ${test.inputs}`, {encoding: 'utf-8'});
+                // Remove unnecessary escape chars if any - Linux does not have \r
+                results = results.replace(new RegExp(/\r/g), '');
+                test.outputs = test.outputs.replace(new RegExp(/\r/g), '');
+
                 // check if the results with expected output for the testcase
                 // if any of the testcases fails, then ignore the rest & return failed state
-                if (test.outputs.trim() == results.trim()) {
+                if (test.outputs === results) {
                     // set the result for the testcase if no execution errors
                     // & push the testResult obj to main output
                     testCaseResult.stdout = results;
