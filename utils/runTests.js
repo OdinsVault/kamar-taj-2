@@ -11,6 +11,7 @@ const util = require('util');
     * 'answer': String,
     * 'testResults': [],
     * 'compilerResult': {'status': Number, 'stdout': String, 'stderr': String},
+    * 'failedTest': {},
     * passed: Boolean}} output - Output object to be populated
  * @param {String} mainClass - main class name exactly as in the code
  * @param {String} userId - userId of the user
@@ -45,6 +46,10 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                 results = results.replace(new RegExp('\\r', 'g'), '');
                 test.outputs = test.outputs.replace(new RegExp('\\r', 'g'), '');
 
+                console.log('Test outputs::: ', JSON.stringify(test.outputs));
+                console.log('Execution results::: ', JSON.stringify(results));
+                console.log('Test passed::: ', test.outputs === results);
+
                 // check if the results with expected output for the testcase
                 // if any of the testcases fails, then ignore the rest & return failed state
                 if (test.outputs === results) {
@@ -52,10 +57,18 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                     // & push the testResult obj to main output
                     testCaseResult.stdout = results;
                     output.testResults.push(testCaseResult);
-                } else break;
+                } else {
+                    output.failedTest = {
+                        inputs: test.inputs,
+                        outputs: test.outputs,
+                        title: test.title,
+                        description: test.description,
+                        stdout: results,
+                        expected: test.outputs
+                    };
+                    break;
+                }
             }
-
-            console.log('Results::: ', util.inspect(output.testResults));
 
             // if all the testcases passed, mark question as passed
             if (output.testResults.length === testCases.length) 
@@ -65,7 +78,7 @@ const runTestCases = (testCases, output, mainClass, userId) => {
             // set testcase object
             testCaseResult.status = err.status;
             testCaseResult.stdout = err.stdout;
-            testCaseResult.stderr = err.stderr;
+            testCaseResult.stderr = err.stderr || err;
 
             console.log('Error while running testcase', err);
         }

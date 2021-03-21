@@ -38,6 +38,7 @@ exports.practiceAnswer = async (req, res) => {
         const output = {
             answer: req.body.answer,
             testResults: [],
+            failedTest: null,
             compilerResult: {
                 status: 0,
                 stdout: null,
@@ -168,37 +169,21 @@ exports.competeAnswer = async (req, res) => {
         const answeredQ = await CompeteQ.findById(id);
         if (!answeredQ) return res.status(404).json({message: 'Question not found'});
 
-        // get the test cases to test with the provided answer
-        const testCases = answeredQ._doc.testcases;
-
         // run the tests & collect the console output to response object
         const output = {
             answer: req.body.answer,
-            testCases,
-            passed: false,
+            testResults: [],
+            failedTest: null,
             compilerResult: {
                 status: 0,
-                stdout: '',
-                stderr: '',
+                stdout: null,
+                stderr: null
             },
+            passed: false
         };
 
-        // // -----------------------------------------
-        // // TODO: Run the code here & get the results
-        // try {
-        //     fs.writeFileSync(`Code.java`, req.body.answer); // create temp file with code
-        //     exec('javac Code.java', {encoding: 'utf-8'}); // compile
-        //     const results = exec('java Code', {encoding: 'utf-8'}); // run
-        //     output.compilerResult.stdout = results;
-        // } catch (err) { // set the error values to output object
-        //     output.compilerResult.status = err.status;
-        //     output.compilerResult.stdout = err.stdout;
-        //     output.compilerResult.stderr = err.stderr;
-        // }
-        // // set passed status by checking errors from code output
-        // if (output.compilerResult.stderr === '')
-        //     output.passed = true;
-        // // -----------------------------------------
+        // Execute the tests & populate the output object
+        runTests(answeredQ._doc.testcases, output, req.body.mainClass, req.userData.userId);
 
         const response = {
             message: output.passed? 'Compete question answer passed':'Compete question answer failed',
