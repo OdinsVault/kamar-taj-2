@@ -1,12 +1,14 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
-
+const {existsSync, mkdirSync} = require('fs');
+const {resolve} = require('path');
 const mongoose = require("mongoose");
+const { ENV } = require("./resources/constants");
 
 mongoose.connect(
   "mongodb+srv://root:" +
-    process.env.MONGO_ATLAS_PW +
+    ENV.MONGO_PW +
     "@simplycluster.jqldp.mongodb.net/simply-mongodb?retryWrites=true&w=majority",
   {
     useUnifiedTopology: true,
@@ -17,6 +19,12 @@ mongoose.connect(
 app.use(morgan("dev"));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+
+// create temp code directory to compile & execute files
+const codeDir = 'temp-code';
+if (!existsSync(resolve(__dirname, codeDir))) {
+    mkdirSync(resolve(__dirname, codeDir));
+}
 
 //CORSE Error prevention
 app.use((req, res, next) => {
@@ -55,5 +63,5 @@ app.use((req, res) => {
   });
 });
 
-const port = process.env.PORT || 8080;
+const port = ENV.PORT || 8080;
 app.listen(port, () => console.log(`Server listening on port ${port}!`));

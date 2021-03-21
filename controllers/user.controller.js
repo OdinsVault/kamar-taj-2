@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ExceptionHandler = require("../exceptions/ExceptionHandler");
-const { ROUTES, XP, ROLE } = require("../resources/constants");
+const { ROUTES, XP, ROLE, ENV } = require("../resources/constants");
 
 //Signup User
 exports.signup = (req, res) => {
@@ -84,7 +84,7 @@ exports.login = (req, res) => {
               userId: user._id,
               roles: [ROLE.USER]
             },
-            process.env.JWT_KEY,
+            ENV.JWT_KEY,
             {
               expiresIn: "1h",
             }

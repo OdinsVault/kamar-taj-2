@@ -3,14 +3,14 @@ const PracticeQ = require("../models/practiceQuestion"),
       User = require("../models/user"),
       mongoose = require("mongoose"),
       jwt = require("jsonwebtoken"),
-      { ROUTES, ROLE } = require("../resources/constants");
+      { ROUTES, ROLE, ENV } = require("../resources/constants");
 
 // Login route for admin accounts
 exports.login = async (req, res) => {
 
     // check if the user is an admin
-    const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
-    const adminPasswords = process.env.ADMIN_PASSWORDS?.split(',') || [];
+    const adminEmails = ENV.ADMIN_EMAILS?.split(',') || [];
+    const adminPasswords = ENV.ADMIN_PASSWORDS?.split(',') || [];
 
     const emailIndex = adminEmails.findIndex(email => email === req.body.email);
     if (emailIndex < 0) return res.status(401).json({message: 'Admin auth failed'});
@@ -27,7 +27,7 @@ exports.login = async (req, res) => {
             userId: null,
             roles: [ROLE.ADMIN]
         },
-        process.env.JWT_KEY,
+        ENV.JWT_KEY,
         {
             expiresIn: "1h",
         }
@@ -62,7 +62,7 @@ exports.createPracticeQ = async (req, res) => {
                 created: saved._doc,
                 request: {
                 type: 'GET',
-                url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${saved._id}`,
+                url: `${ENV.BASE_URL}/${ROUTES.PRACTICEQ}/${saved._id}`,
             },
         }
 
@@ -91,7 +91,7 @@ exports.updatePracticeQ = async (req, res) => {
             updated: updatedQ,
             request: {
                 type: 'GET',
-                url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
+                url: `${ENV.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
             },
         }
 
@@ -128,7 +128,7 @@ exports.deletePracticeQ = async (req, res) => {
             request: {
                 type: 'POST',
                 description: 'You can create a question with this URL',
-                url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}`,
+                url: `${ENV.BASE_URL}/${ROUTES.PRACTICEQ}`,
             },
         });
     } catch (err) {
@@ -164,7 +164,7 @@ exports.createCompeteQ = async (req, res) => {
             created: saved,
             request: {
               type: 'GET',
-              url: `${process.env.BASE_URL}/${ROUTES.COMPETEQ}/${saved._id}`,
+              url: `${ENV.BASE_URL}/${ROUTES.COMPETEQ}/${saved._id}`,
             },
           });
         
@@ -192,7 +192,7 @@ exports.updateCompeteQ = async (req, res) => {
         updated: updatedQ,
         request: {
             type: 'GET',
-            url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
+            url: `${ENV.BASE_URL}/${ROUTES.PRACTICEQ}/${id}`,
         },
         }
 
@@ -229,7 +229,7 @@ exports.deleteCompeteQ = async (req, res) => {
             request: {
                 type: 'POST',
                 description: 'You can create a question with this URL',
-                url: `${process.env.BASE_URL}/${ROUTES.COMPETEQ}`,
+                url: `${ENV.BASE_URL}/${ROUTES.COMPETEQ}`,
             },
         });
     } catch (err) {

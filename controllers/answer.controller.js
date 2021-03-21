@@ -2,10 +2,8 @@ const User = require('../models/user'),
       PracticeQ = require('../models/practiceQuestion'),
       CompeteQ = require('../models/competeQuestion'),
       mongoose = require("mongoose"),
-      exec = require('child_process').execSync,
-      fs = require('fs'),
+      runTests = require('../utils/runTests'),
       {ROUTES} = require('../resources/constants');
-
 
 exports.practiceAnswer = async (req, res) => {
     const id = req.params[ROUTES.QUESTIONID];
@@ -36,37 +34,20 @@ exports.practiceAnswer = async (req, res) => {
                 }
             });
 
-        // get the test cases to test with the provided answer
-        const testCases = answeredQ._doc.testcases;
-
         // run the tests & collect the console output to response object
         const output = {
             answer: req.body.answer,
-            testCases,
-            passed: false,
+            testResults: [],
             compilerResult: {
                 status: 0,
-                stdout: '',
-                stderr: '',
+                stdout: null,
+                stderr: null
             },
+            passed: false
         };
 
-        // // -----------------------------------------
-        // // TODO: Run the code here & get the results
-        // try {
-        //     fs.writeFileSync(`Code.java`, req.body.answer); // create temp file with code
-        //     exec('javac Code.java', {encoding: 'utf-8'}); // compile
-        //     const results = exec('java Code', {encoding: 'utf-8'}); // run
-        //     output.compilerResult.stdout = results;
-        // } catch (err) { // set the error values to output object
-        //     output.compilerResult.status = err.status;
-        //     output.compilerResult.stdout = err.stdout;
-        //     output.compilerResult.stderr = err.stderr;
-        // }
-        // // set passed status by checking errors from code output
-        // if (output.compilerResult.stderr === '')
-        //     output.passed = true;
-        // // -----------------------------------------
+        // Execute the tests & populate the output object
+        runTests(answeredQ._doc.testcases, output, req.body.mainClass, req.userData.userId);
 
         const response = {
             message: output.passed? 'Practice question answer passed':'Practice question answer failed',

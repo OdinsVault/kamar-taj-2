@@ -1,6 +1,6 @@
 
 const CompeteQ = require('../models/competeQuestion'),
-      { ROUTES } = require('../resources/constants');
+      { ROUTES, ENV } = require('../resources/constants');
 
 /**
  * Get all compete questions
@@ -18,7 +18,7 @@ exports.getAll = async (req, res) => {
                     ...q._doc,
                     request: {
                         type: 'GET',
-                        url: `${process.env.BASE_URL}/${ROUTES.COMPETEQ}/${q._id}`
+                        url: `${ENV.BASE_URL}/${ROUTES.COMPETEQ}/${q._id}`
                     }
                 }
             }),

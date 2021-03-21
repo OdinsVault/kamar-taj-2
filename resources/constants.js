@@ -1,9 +1,21 @@
 module.exports = Object.freeze({
+    ENV: {
+        MONGO_PW: process.env.MONGO_ATLAS_PW,
+        JWT_KEY: process.env.JWT_KEY,
+        PORT: process.env.PORT,
+        ADMIN_EMAILS: process.env.ADMIN_EMAILS,
+        ADMIN_PASSWORDS: process.env.ADMIN_PASSWORDS,
+        BASE_URL: process.env.BASE_URL,
+    },
+
     XP: {
         BEGINNER: 'Beginner',
         INTERMEDIATE: 'Intermediate',
         ADVANCED: 'Advanced',
     },
+
+    // Test runner
+    CODEDIR: 'temp-code',
 
     // App roles
     ROLE: {

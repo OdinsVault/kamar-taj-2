@@ -1,5 +1,5 @@
 const PracticeQ = require("../models/practiceQuestion"),
-      { ROUTES } = require("../resources/constants");
+      { ROUTES, ENV } = require("../resources/constants");
 
 //Get all questions
 exports.get_all = (req, res) => {
@@ -15,7 +15,7 @@ exports.get_all = (req, res) => {
             ...doc._doc,
             request: {
               type: "GET",
-              url: `${process.env.BASE_URL}/${ROUTES.PRACTICEQ}/${doc._id}`,
+              url: `${ENV.BASE_URL}/${ROUTES.PRACTICEQ}/${doc._id}`,
             },
           };
         }),
