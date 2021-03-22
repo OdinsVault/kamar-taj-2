@@ -2,7 +2,7 @@ const {execSync} = require('child_process'),
       {join} = require('path'),
       {CODEDIR: codeDir} = require('../resources/constants'),
       {writeFileSync, unlink, stat} = require('fs');
-const util = require('util');
+
 /**
  * Compile the answer code & runs the test cases.
  * Populates the output object. 

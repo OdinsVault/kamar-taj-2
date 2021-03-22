@@ -6,59 +6,58 @@ const ExceptionHandler = require("../exceptions/ExceptionHandler");
 const { ROUTES, XP, ROLE, ENV } = require("../resources/constants");
 
 //Signup User
-exports.signup = (req, res) => {
-  User.find({ email: req.body.email })
-    .exec()
-    .then((user) => {
-      if (user.length >= 1) {
+exports.signup = async (req, res) => {
+  const requiredProps = ['fname', 'lname', 'email', 'password', 'dob', 'institute'];
+
+  // if not all required keys present, throw error
+  const noAllProps = requiredProps.some(prop => !Object.keys(req.body).includes(prop));
+  if (noAllProps) 
+    return res.status(400).json({message: 'Some of the required properties are missing'});
+
+  // if all required props present, try to create user with any optional props
+  const optionalProps = ['xp'];
+  const userObj = {};
+  for (const [key, val] of Object.entries(req.body)) {
+    if ([...requiredProps, ...optionalProps].includes(key)) {
+      userObj[key] = val;
+    }
+  }
+  
+  // convert to necessary types
+  userObj.dob = new Date(userObj.dob);
+  if (userObj.xp) userObj.xp = Object.values(XP).find(xp => userObj.xp === xp) || XP.BEGINNER;
+
+  try {
+    // hash password
+    userObj.password = await bcrypt.hash(userObj.password, 10);
+
+    // save user
+    const created = await new User({
+      _id: new mongoose.Types.ObjectId(),
+      ...userObj
+    }).save({validateBeforeSave: true});
+
+    // remove unnecessary fields
+    delete created._doc.password;
+    delete created._doc.__v;
+
+    res.status(201).json({message: 'User created', result: created});
+
+  } catch (err) {
+      console.log(err);
+      // handle unique index - email
+      if (err.code && err.code === 11000) {
         return res.status(409).json({
-          message: "This email already exists",
-        });
-      } else {
-        bcrypt.hash(req.body.password, 10, (err, hash) => {
-          if (err) {
-            return res.status(500).json({
-              message: 'Error occurred while creating user profile',
-              error: err,
-            });
-          } else {
-            const user = new User({
-              _id: new mongoose.Types.ObjectId(),
-              fname: req.body.fname,
-              lname: req.body.lname,
-              email: req.body.email,
-              institute: req.body.institute,
-              dob: new Date(req.body.dob),
-              password: hash,
-            });
-            user
-              .save()
-              .then((result) => {
-                delete result._doc.password;
-                delete result._doc.__v; // remove unnecessary fields from return obj
-                return res.status(201).json({
-                  message: "User created successfully!",
-                  result
-                });
-              })
-              .catch((err) => {
-                console.log(err);
-                res.status(500).json({
-                  message: 'Error occurred while saving user profile',
-                  error: err,
-                });
-              });
+          message: 'Error occured while saving user',
+          error: {
+            type: 'Duplicate value for unique attribute',
+            keyValue: err.keyValue,
           }
         });
       }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        message: 'Error occurred while signing up',
-        error: err,
-      });
-    });
+      res.status(500).json({message: 'Error occured while saving user', error: err});
+  }
+
 };
 
 //Login
