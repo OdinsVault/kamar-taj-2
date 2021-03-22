@@ -59,10 +59,7 @@ const runTestCases = (testCases, output, mainClass, userId) => {
                     output.testResults.push(testCaseResult);
                 } else {
                     output.failedTest = {
-                        inputs: test.inputs,
-                        outputs: test.outputs,
-                        title: test.title,
-                        description: test.description,
+                        testCase: test,
                         stdout: results,
                         expected: test.outputs
                     };
@@ -87,7 +84,7 @@ const runTestCases = (testCases, output, mainClass, userId) => {
         // set compiler results
         output.compilerResult.status = err.status;
         output.compilerResult.stdout = err.stdout;
-        output.compilerResult.stderr = err.stderr;
+        output.compilerResult.stderr = err.stderr || err;
 
         console.log('Error while compiling answer', err);
     } finally {
