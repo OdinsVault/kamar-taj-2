@@ -13,7 +13,7 @@
 view online: [https://documenter.getpostman.com/view/14306889/TWDfDYXA](https://documenter.getpostman.com/view/14306889/TWDfDYXA)
 
 
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/6107e314930282bc26b0?action=collection%2Fimport#?env%5BProd%5D=W3sia2V5IjoiZG9tYWluIiwidmFsdWUiOiJodHRwczovL3NpbXBseS1zZXJ2ZXIuaGVyb2t1YXBwLmNvbS92MSIsImVuYWJsZWQiOnRydWV9XQ==)
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/6107e314930282bc26b0?action=collection%2Fimport)
 
 ---
 

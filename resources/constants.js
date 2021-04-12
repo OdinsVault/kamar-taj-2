@@ -59,5 +59,11 @@ module.exports = Object.freeze({
         DISTINCTINSTITUTES: 'distinctinstitutes',
         // admin.routes
         ADMIN: 'admin',
+        // tutorial.routes
+        TUTORIAL: 'tutorial',
+        TUTORIALID: 'tutorialId',
+        TUTORIALIDPARAM: ':tutorialId',
+        TUTORIALLEVEL: 'tutelevel',
+        TUTORIALLEVELPARAM: ':tutelevel',
     }
 });

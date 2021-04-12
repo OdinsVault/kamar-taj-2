@@ -1,6 +1,7 @@
 const PracticeQ = require("../models/practiceQuestion"),
       CompeteQ = require("../models/competeQuestion"),
       User = require("../models/user"),
+      Tutorial = require("../models/tutorial"),
       mongoose = require("mongoose"),
       jwt = require("jsonwebtoken"),
       { ROUTES, ROLE, ENV } = require("../resources/constants");
@@ -236,6 +237,122 @@ exports.deleteCompeteQ = async (req, res) => {
         console.log(err);
         res.status(500).json({
             message: 'Error occurred while deleting compete question',
+            error: err
+        });
+    }
+}
+
+// ------------------
+// tutorial handlers
+exports.addTutorial = async (req, res) => {
+    // check if req body is a valid tutorial
+    if ((!req.body.level || req.body.level === '') || (!req.body.description || req.body.description === '')
+        || (!req.body.subsection || req.body.subsection === '')) 
+        return res.status(400).json({message: 'Some required fields are missing'}); 
+
+    // parse values to number
+    req.body.level = parseInt(req.body.level);
+    req.body.subsection = parseInt(req.body.subsection);
+
+    try {
+        // check if tutorial for this level-subsection already exists
+        const tutorialForThisLevel = await Tutorial.findOne({level: req.body.level, subsection: req.body.subsection});
+        if (tutorialForThisLevel) return res.status(409).json({message: 'Tutorial for this level-subsection already exists'});
+
+        // add new tutorial and/or subsection
+        const saved = await new Tutorial({
+            _id: new mongoose.Types.ObjectId(),
+            level: req.body.level,
+            subsection: req.body.subsection,
+            description: req.body.description
+        }).save();
+
+        delete saved._doc.__v;
+
+        res.status(201).json({
+            message: 'Tutorial added successfully',
+            created: saved,
+            request: {
+              type: 'GET',
+              url: `${ENV.BASE_URL}/${ROUTES.TUTORIAL}/${saved._id}`,
+            },
+          });
+
+    } catch (err) {
+        res.status(500).json({
+            message: 'Error occurred while adding tutorial',
+            error: err
+        });
+    }
+
+}
+
+exports.editTutorial = async (req, res) => {
+    // check id
+    const tutorialId = req.params[ROUTES.TUTORIALID];
+    if (!tutorialId) return res.status(400).json({message: 'Tutorial Id is not present'});
+
+    // create update obj
+    const updateObj = {};
+    const updatebleKeys = ['level', 'subsection', 'description'];
+
+    for (const [key, val] of Object.entries(req.body)) {
+        if (updatebleKeys.includes(key))
+            updateObj[key] = val;
+    }
+
+    // parse number values &
+    // create find query condition
+    if (updateObj.level)
+        updateObj.level = parseInt(updateObj.level);
+    if (updateObj.subsection)
+        updateObj.subsection = parseInt(updateObj.subsection);
+
+    try {   
+        // perform the update
+        const updated = await Tutorial.findOneAndUpdate({_id: tutorialId}, updateObj, {new: true})
+                            .select('-__v');
+
+        if (!updated) 
+            return res.status(404).json({message: 'Could not find existing section for Id'});
+
+        res.status(200).json({
+            message: 'Tutorial edited successfully',
+            updated,
+        });
+    } catch (err) {
+        // handle unique index - level_subsection
+        if (err.codeName && err.codeName === 'DuplicateKey') {
+            return res.status(409).json({
+            message: 'Error occured while updating section',
+            error: {
+                type: 'Duplicate value for unique attribute',
+                keyValue: err.keyValue,
+            }
+            });
+        }
+        res.status(500).json({
+            message: 'Error occurred while updating tutorial',
+            error: err
+        });
+    }
+}
+
+exports.deleteTutorial = async (req, res) => {
+    // check param
+    const tutorialId = req.params[ROUTES.TUTORIALID];
+    if (!tutorialId) return res.status(400).json({message: 'Tutorial Id is not present'});
+
+    try {
+        await Tutorial.deleteOne({_id: tutorialId});
+
+        res.status(200).json({
+            message: 'Tutorial deleted successfully',
+            deleted: tutorialId,
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: 'Error occurred while deleting tutorial',
             error: err
         });
     }

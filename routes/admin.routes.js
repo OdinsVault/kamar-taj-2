@@ -48,5 +48,23 @@ router.delete(
     adminAuth,
     AdminController.deleteCompeteQ);
 
+// Tutorial administration
+// Add tutorial section
+router.post(
+    `/${ROUTES.TUTORIAL}`,
+    adminAuth,
+    AdminController.addTutorial);
+
+// Edit tutorial by Id
+router.patch(
+    `/${ROUTES.TUTORIAL}/${ROUTES.TUTORIALIDPARAM}`,
+    adminAuth,
+    AdminController.editTutorial);
+
+// Delete tutorial by Id
+router.delete(
+    `/${ROUTES.TUTORIAL}/${ROUTES.TUTORIALIDPARAM}`,
+    adminAuth,
+    AdminController.deleteTutorial);
 
 module.exports = router;

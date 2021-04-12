@@ -32,12 +32,17 @@ router.use(
         require('./answer.routes')
     );
 
+// Tutorial routes
+router.use(
+        `/${ROUTES.TUTORIAL}`,
+        require('./tutorial.routes')
+    );
+
 // Admin routes
 router.use(
         `/${ROUTES.ADMIN}`,
         require('./admin.routes')
     );
-
 
 
 module.exports = router;
