@@ -4,7 +4,7 @@ const morgan = require("morgan");
 const {existsSync, mkdirSync} = require('fs');
 const {resolve} = require('path');
 const mongoose = require("mongoose");
-const { ENV } = require("./resources/constants");
+const { ENV, CODEDIR } = require("./resources/constants");
 
 mongoose.connect(
   "mongodb+srv://root:" +
@@ -21,14 +21,16 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
 // create temp code directory to compile & execute files
-const codeDir = 'temp-code';
-if (!existsSync(resolve(__dirname, codeDir))) {
-    mkdirSync(resolve(__dirname, codeDir));
+if (!existsSync(resolve(__dirname, CODEDIR))) {
+    mkdirSync(resolve(__dirname, CODEDIR));
 }
 
+// Support for multiple origins
+// get the comma delimited string of origins
+const origins = ENV.ORIGINS.split(',');
 //CORSE Error prevention
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", origins.find(org => org === req.headers.origin) || origins[0]);
   res.header(
     "Access-Control-Allow-Header",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
@@ -45,7 +47,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req, res) => {
+app.get('/', (_, res) => {
   console.log("Welcome to platform...");
   res.json({ message: "Welcome to platform..." });
 });
@@ -55,12 +57,8 @@ app.use('/v1', require('./routes'));
 
 
 // Handle unmatched routes
-app.use((req, res) => {
-  res.status(500).json({
-    error: {
-      message: 'Not found!',
-    },
-  });
+app.use((_, res) => {
+  res.status(404).json({message: 'Not found!'});
 });
 
 const port = ENV.PORT || 8080;

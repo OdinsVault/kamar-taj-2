@@ -38,7 +38,6 @@ exports.practiceAnswer = async (req, res) => {
         const output = {
             answer: req.body.answer,
             testResults: [],
-            failedTest: null,
             compilerResult: {
                 status: 0,
                 stdout: null,
@@ -48,7 +47,7 @@ exports.practiceAnswer = async (req, res) => {
         };
 
         // Execute the tests & populate the output object
-        runTests(answeredQ._doc.testcases, output, req.body.mainClass, req.userData.userId);
+        await runTests(answeredQ._doc.testcases, output, req.body.mainClass, req.userData.userId);
 
         const response = {
             message: output.passed? 'Practice question answer passed':'Practice question answer failed',
@@ -173,7 +172,6 @@ exports.competeAnswer = async (req, res) => {
         const output = {
             answer: req.body.answer,
             testResults: [],
-            failedTest: null,
             compilerResult: {
                 status: 0,
                 stdout: null,
@@ -183,7 +181,7 @@ exports.competeAnswer = async (req, res) => {
         };
 
         // Execute the tests & populate the output object
-        runTests(answeredQ._doc.testcases, output, req.body.mainClass, req.userData.userId);
+        await runTests(answeredQ._doc.testcases, output, req.body.mainClass, req.userData.userId);
 
         const response = {
             message: output.passed? 'Compete question answer passed':'Compete question answer failed',

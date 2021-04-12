@@ -6,6 +6,7 @@ module.exports = Object.freeze({
         ADMIN_EMAILS: process.env.ADMIN_EMAILS,
         ADMIN_PASSWORDS: process.env.ADMIN_PASSWORDS,
         BASE_URL: process.env.BASE_URL,
+        ORIGINS: process.env.ORIGINS || '*',
     },
 
     XP: {

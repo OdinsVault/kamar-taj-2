@@ -58,6 +58,15 @@ exports.get_by_level = (req, res) => {
     });
 };
 
+// get question levels overview
+// exports.getLevelsOverview = async (req, res) => {
+//   const overview = await PracticeQ.aggregate([
+//       { $unset: '__v' },
+//       { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
+//       { $sort: { _id: 1 } },
+//     ]);
+// }
+
 //Get question by id
 exports.get_one = (req, res) => {
   const id = req.params[ROUTES.QUESTIONID];

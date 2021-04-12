@@ -1,7 +1,8 @@
-const {execSync} = require('child_process'),
+const {exec} = require('child_process'),
       {join} = require('path'),
-      {CODEDIR: codeDir} = require('../resources/constants'),
-      {writeFileSync, unlink, stat} = require('fs');
+      {CODEDIR} = require('../resources/constants'),
+      {promisify} = require('util'),
+      {unlink, stat, writeFile} = require('fs');
 
 /**
  * Compile the answer code & runs the test cases.
@@ -16,74 +17,71 @@ const {execSync} = require('child_process'),
  * @param {String} mainClass - main class name exactly as in the code
  * @param {String} userId - userId of the user
  */
-const runTestCases = (testCases, output, mainClass, userId) => {
+const runTestCases = async (testCases, output, mainClass, userId) => {
     // generate unique filename for each compilation
     const className = `Class${userId}${Date.now()}`;
-    const filePath = join(codeDir, `${className}.java`);
+    const filePath = join(CODEDIR, `${className}.java`);
+
+    // create promisified functions
+    const execPromise = promisify(exec);
+    const writeFilePromise = promisify(writeFile);
 
     try {
         // Replace the class name within the code &
         // create temp file with code
-        writeFileSync(filePath, output.answer.replace(new RegExp(mainClass, 'g'), className));
+        await writeFilePromise(filePath, output.answer.replace(new RegExp(mainClass, 'g'), className));
 
         // compile
-        output.compilerResult.stdout = execSync(`javac -d ${codeDir} ${filePath}`, {encoding: 'utf-8'});
+        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
+        output.compilerResult.stdout = compilerResult.stdout;
+
+        // create promises array for testcases
+        const testcasePromises = [];
+        testCases.forEach(test => {
+            testcasePromises.push(
+                execPromise(`java -cp ${CODEDIR} ${className} ${test.inputs}`, {encoding: 'utf-8'})
+            );
+        });
 
         // try & run test cases
         try {
-            for (const test of testCases) {
-                // create result obj for this testcase
+            // run all the tests async
+            const testResults = await Promise.all(testcasePromises);
+
+            // check each test result
+            testResults.forEach((results, index) => {
+                const stdOut = results.stdout.replace(new RegExp('\\r', 'g'), '');
+                testCases[index].outputs = testCases[index].outputs.replace(new RegExp('\\r', 'g'), '');
+
                 const testCaseResult = {
-                    testCase: test,
+                    testCase: testCases[index],
                     status: 0,
-                    stdout: null,
-                    stderr: null
+                    stdout: stdOut,
+                    stderr: (results.stderr === '')? null : results.stderr,
+                    expected: testCases[index].outputs
                 };
-                
-                // execute the code with testcase
-                let results = execSync(`java -cp ${codeDir} ${className} ${test.inputs}`, {encoding: 'utf-8'});
-                // Remove unnecessary escape chars if any - Linux does not have \r
-                results = results.replace(new RegExp('\\r', 'g'), '');
-                test.outputs = test.outputs.replace(new RegExp('\\r', 'g'), '');
 
-                console.log('Test outputs::: ', JSON.stringify(test.outputs));
-                console.log('Execution results::: ', JSON.stringify(results));
-                console.log('Test passed::: ', test.outputs === results);
+                // set the testcase passed status
+                if (!(testCases[index].outputs === stdOut))
+                    testCaseResult.status = -1;
 
-                // check if the results with expected output for the testcase
-                // if any of the testcases fails, then ignore the rest & return failed state
-                if (test.outputs === results) {
-                    // set the result for the testcase if no execution errors
-                    // & push the testResult obj to main output
-                    testCaseResult.stdout = results;
-                    output.testResults.push(testCaseResult);
-                } else {
-                    output.failedTest = {
-                        testCase: test,
-                        stdout: results,
-                        expected: test.outputs
-                    };
-                    break;
-                }
-            }
+                // push the testResult obj to main output
+                output.testResults.push(testCaseResult);
+            });
 
-            // if all the testcases passed, mark question as passed
-            if (output.testResults.length === testCases.length) 
+            // check if all the tests are passed
+            // update passed status
+            if (output.testResults.every(result => result.status === 0))
                 output.passed = true;
 
         } catch (err) {
-            // set testcase object
-            testCaseResult.status = err.status;
-            testCaseResult.stdout = err.stdout;
-            testCaseResult.stderr = err.stderr || err;
-
             console.log('Error while running testcase', err);
         }
 
     } catch (err) { 
         // set compiler results
-        output.compilerResult.status = err.status;
-        output.compilerResult.stdout = err.stdout;
+        output.compilerResult.status = err.status || -1;
+        output.compilerResult.stdout = err.stdout || '';
         output.compilerResult.stderr = err.stderr || err;
 
         console.log('Error while compiling answer', err);
