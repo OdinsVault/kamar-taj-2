@@ -52,7 +52,9 @@ module.exports = Object.freeze({
         // answer.routes
         ANSWER: 'answer',
         PRACTICEANSWER: 'practice',
+        PRACTICERUN: 'practice-run',
         COMPETEANSWER: 'compete',
+        COMPETERUN: 'compete-run',
         // leaderboard.routes
         LEADERBOARD: 'leaderboard',
         FILTER: 'filter',
