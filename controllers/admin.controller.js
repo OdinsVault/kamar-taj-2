@@ -246,24 +246,21 @@ exports.deleteCompeteQ = async (req, res) => {
 // tutorial handlers
 exports.addTutorial = async (req, res) => {
     // check if req body is a valid tutorial
-    if ((!req.body.level || req.body.level === '') || (!req.body.description || req.body.description === '')
-        || (!req.body.subsection || req.body.subsection === '')) 
+    if (
+        (!req.body[ROUTES.LEVEL] || req.body[ROUTES.LEVEL] === '') ||
+        (!req.body.title || req.body.title === '') || 
+        (!req.body.description || req.body.description === '')) 
         return res.status(400).json({message: 'Some required fields are missing'}); 
 
     // parse values to number
-    req.body.level = parseInt(req.body.level);
-    req.body.subsection = parseInt(req.body.subsection);
+    req.body[ROUTES.LEVEL] = parseInt(req.body[ROUTES.LEVEL]);
 
     try {
-        // check if tutorial for this level-subsection already exists
-        const tutorialForThisLevel = await Tutorial.findOne({level: req.body.level, subsection: req.body.subsection});
-        if (tutorialForThisLevel) return res.status(409).json({message: 'Tutorial for this level-subsection already exists'});
-
-        // add new tutorial and/or subsection
+        // add new tutorial
         const saved = await new Tutorial({
             _id: new mongoose.Types.ObjectId(),
-            level: req.body.level,
-            subsection: req.body.subsection,
+            level: req.body[ROUTES.LEVEL],
+            title: req.body.title,
             description: req.body.description
         }).save();
 
@@ -274,11 +271,22 @@ exports.addTutorial = async (req, res) => {
             created: saved,
             request: {
               type: 'GET',
-              url: `${ENV.BASE_URL}/${ROUTES.TUTORIAL}/${saved._id}`,
+              url: `${ENV.BASE_URL}/${ROUTES.TUTORIAL}/${saved.level}`,
             },
           });
 
     } catch (err) {
+        // handle unique index - level
+        if (err.codeName && err.codeName === 'DuplicateKey') {
+            return res.status(409).json({
+            message: 'Error occured while adding tutorial',
+            error: {
+                type: 'Duplicate value for unique attribute',
+                keyValue: err.keyValue,
+            }
+            });
+        }
+
         res.status(500).json({
             message: 'Error occurred while adding tutorial',
             error: err
@@ -289,12 +297,12 @@ exports.addTutorial = async (req, res) => {
 
 exports.editTutorial = async (req, res) => {
     // check id
-    const tutorialId = req.params[ROUTES.TUTORIALID];
-    if (!tutorialId) return res.status(400).json({message: 'Tutorial Id is not present'});
+    const tutorialLevel = req.params[ROUTES.LEVEL];
+    if (!tutorialLevel) return res.status(400).json({message: 'Tutorial level is not present'});
 
     // create update obj
     const updateObj = {};
-    const updatebleKeys = ['level', 'subsection', 'description'];
+    const updatebleKeys = ['level', 'title', 'description'];
 
     for (const [key, val] of Object.entries(req.body)) {
         if (updatebleKeys.includes(key))
@@ -305,26 +313,24 @@ exports.editTutorial = async (req, res) => {
     // create find query condition
     if (updateObj.level)
         updateObj.level = parseInt(updateObj.level);
-    if (updateObj.subsection)
-        updateObj.subsection = parseInt(updateObj.subsection);
 
     try {   
         // perform the update
-        const updated = await Tutorial.findOneAndUpdate({_id: tutorialId}, updateObj, {new: true})
+        const updated = await Tutorial.findOneAndUpdate({level: tutorialLevel}, updateObj, {new: true})
                             .select('-__v');
 
         if (!updated) 
-            return res.status(404).json({message: 'Could not find existing section for Id'});
+            return res.status(404).json({message: `Could not find existing tutorial for level ${tutorialLevel}`});
 
         res.status(200).json({
             message: 'Tutorial edited successfully',
             updated,
         });
     } catch (err) {
-        // handle unique index - level_subsection
+        // handle unique index - level
         if (err.codeName && err.codeName === 'DuplicateKey') {
             return res.status(409).json({
-            message: 'Error occured while updating section',
+            message: 'Error occured while updating tutorial',
             error: {
                 type: 'Duplicate value for unique attribute',
                 keyValue: err.keyValue,
@@ -340,15 +346,18 @@ exports.editTutorial = async (req, res) => {
 
 exports.deleteTutorial = async (req, res) => {
     // check param
-    const tutorialId = req.params[ROUTES.TUTORIALID];
-    if (!tutorialId) return res.status(400).json({message: 'Tutorial Id is not present'});
+    const tutorialLevel = req.params[ROUTES.LEVEL];
+    if (!tutorialLevel) return res.status(400).json({message: 'Tutorial level is not present'});
 
     try {
-        await Tutorial.deleteOne({_id: tutorialId});
+        const deleted = await Tutorial.findOneAndDelete({level: tutorialLevel}).select('-__v');
 
+        if (!deleted) 
+            return res.status(404).json({message: `Tutorial not found for level ${tutorialLevel}`});
+        
         res.status(200).json({
             message: 'Tutorial deleted successfully',
-            deleted: tutorialId,
+            deleted
         });
     } catch (err) {
         res.status(500).json({

@@ -3,15 +3,9 @@ const TutorialController = require('../controllers/tutorial.controller'),
       {ROUTES} = require('../resources/constants');
 
 
-// Tutorial section get by id
-router.get(
-    `/:${ROUTES.TUTORIALID}`,
-    TutorialController.getTutorialById
-);
-
 // Tutorial get by level
 router.get(
-    `/${ROUTES.TUTORIALLEVEL}/:${ROUTES.TUTORIALLEVEL}`,
+    `/:${ROUTES.LEVEL}`,
     TutorialController.getTutorialByLevel
 );
 

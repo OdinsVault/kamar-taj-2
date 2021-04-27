@@ -57,13 +57,13 @@ router.post(
 
 // Edit tutorial by Id
 router.patch(
-    `/${ROUTES.TUTORIAL}/:${ROUTES.TUTORIALID}`,
+    `/${ROUTES.TUTORIAL}/:${ROUTES.LEVEL}`,
     adminAuth,
     AdminController.editTutorial);
 
 // Delete tutorial by Id
 router.delete(
-    `/${ROUTES.TUTORIAL}/:${ROUTES.TUTORIALID}`,
+    `/${ROUTES.TUTORIAL}/:${ROUTES.LEVEL}`,
     adminAuth,
     AdminController.deleteTutorial);
 

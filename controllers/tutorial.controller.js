@@ -1,54 +1,41 @@
 const Tutorial = require("../models/tutorial"),
       {ROUTES} = require('../resources/constants');
 
-
+/**
+ * Returns the tutorial found by the level.
+ * Level is unique for each tutorial.
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 exports.getTutorialByLevel = async (req, res) => {
-    // check level param
-    const tutorialLevel = req.params[ROUTES.TUTORIALLEVEL];
+    // check id param
+    const tutorialLevel = parseInt(req.params[ROUTES.LEVEL]);
     if (!tutorialLevel || tutorialLevel === '')
         return res.status(400).json({message: 'Tutorial level is not present'});
 
     try {
-        // get all subsection sorted in asc
-        const tutorialSections = await Tutorial.find({level: parseInt(tutorialLevel)})
-                                        .sort('subsection')
-                                        .select('-__v');
-        
-        res.status(200).json({
-            message: 'Tutorial sections by level fetched successfully',
-            requestedLevel: parseInt(tutorialLevel),
-            sections: tutorialSections,
-        });
-        
-    } catch (err) {
-        res.status(500).json({
-            message: 'Error occurred while getting tutorial sections by level',
-            error: err
-        });
-    }
-}
+        const [tutorialsCount, tutorial] = await Promise.all([
+            Tutorial.countDocuments({}),
+            Tutorial.findOne({level: tutorialLevel}).select('-__v')
+        ]);
 
-exports.getTutorialById = async (req, res) => {
-    // check id param
-    const tutorialId = req.params[ROUTES.TUTORIALID];
-    if (!tutorialId || tutorialId === '')
-        return res.status(400).json({message: 'Tutorial id is not present'});
+        // find & send the tutorial data if found
+        if (!tutorial) 
+            return res.status(404).json({message: 'No tutorial found for provided level'});
 
-    try {
-        // find & send the section if found
-        const section = await Tutorial.findById(tutorialId).select('-__v');
-        if (!section) return res.status(404).json({
-            message: 'No tutorial section found by provided Id',
-        });
+        const response = {
+            totalTutorialsCount: tutorialsCount,
+            previousTutorialLevel: tutorialLevel === 1? null : tutorialLevel - 1,
+            nextTutorialLevel: tutorialLevel === tutorialsCount? null : tutorialLevel + 1,
+            tutorial
+        };
 
-        res.status(200).json({
-            message: 'Tutorial section fetched',
-            section
-        });
+        res.status(200).json(response);
 
     } catch (err) {
         res.status(500).json({
-            message: 'Error occurred while getting tutorial section by Id',
+            message: 'Error occurred while getting tutorial level',
             error: err
         });
     }
