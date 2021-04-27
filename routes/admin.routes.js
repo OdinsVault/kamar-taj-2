@@ -18,13 +18,13 @@ router.post(
 
 // Update a practice question
 router.patch(
-    `/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.PRACTICEQ}/:${ROUTES.QUESTIONID}`,
     adminAuth,
     AdminController.updatePracticeQ);
 
 // Delete a practice question
 router.delete(
-    `/${ROUTES.PRACTICEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.PRACTICEQ}/:${ROUTES.QUESTIONID}`,
     adminAuth,
     AdminController.deletePracticeQ);
 
@@ -38,13 +38,13 @@ router.post(
 
 // Update compete question
 router.patch(
-    `/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.COMPETEQ}/:${ROUTES.QUESTIONID}`,
     adminAuth,
     AdminController.updateCompeteQ);
 
 // Delete compete question
 router.delete(
-    `/${ROUTES.COMPETEQ}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.COMPETEQ}/:${ROUTES.QUESTIONID}`,
     adminAuth,
     AdminController.deleteCompeteQ);
 
@@ -57,13 +57,13 @@ router.post(
 
 // Edit tutorial by Id
 router.patch(
-    `/${ROUTES.TUTORIAL}/${ROUTES.TUTORIALIDPARAM}`,
+    `/${ROUTES.TUTORIAL}/:${ROUTES.TUTORIALID}`,
     adminAuth,
     AdminController.editTutorial);
 
 // Delete tutorial by Id
 router.delete(
-    `/${ROUTES.TUTORIAL}/${ROUTES.TUTORIALIDPARAM}`,
+    `/${ROUTES.TUTORIAL}/:${ROUTES.TUTORIALID}`,
     adminAuth,
     AdminController.deleteTutorial);
 

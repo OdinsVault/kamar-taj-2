@@ -12,7 +12,7 @@ router.get(`/${ROUTES.FILTER}`, LeaderboardController.filterLeaderboard);
 router.get(`/${ROUTES.DISTINCTINSTITUTES}`, LeaderboardController.distinctInstitutes);
 
 // get specific user ranking in leaderboard
-router.get(`/${ROUTES.USERIDPARAM}`, LeaderboardController.getUserRanking);
+router.get(`/:${ROUTES.USERID}`, LeaderboardController.getUserRanking);
 
 
 module.exports = router;

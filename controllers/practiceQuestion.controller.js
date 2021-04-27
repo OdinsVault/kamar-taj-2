@@ -1,4 +1,5 @@
 const PracticeQ = require("../models/practiceQuestion"),
+      User = require('../models/user'),
       { ROUTES, ENV } = require("../resources/constants");
 
 //Get all questions
@@ -59,13 +60,104 @@ exports.get_by_level = (req, res) => {
 };
 
 // get question levels overview
-// exports.getLevelsOverview = async (req, res) => {
-//   const overview = await PracticeQ.aggregate([
-//       { $unset: '__v' },
-//       { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
-//       { $sort: { _id: 1 } },
-//     ]);
-// }
+exports.getLevelsOverview = async (req, res) => {
+  try {
+    const [questionsByLevel, user] = await Promise.all([
+      PracticeQ.aggregate([
+        { $unset: '__v' },
+        { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
+        { $sort: { _id: 1 } },
+      ]),
+      User.findOne({_id: req.userData.userId})
+    ]);
+
+    const response = {
+      userLevel: user._doc.completion,
+      totalQuestionLevels: questionsByLevel.length,
+      overview: null
+    }
+    
+    // for each level, create the overview object
+    let overviews = [];
+
+    questionsByLevel.forEach(level => {
+      const questionsOfLevel = level.questions;
+      const overview = {
+        category: questionsByLevel[0].category,
+        level: level._id,
+        questions: questionsOfLevel.length,
+        completed: 0,
+        levelCompleted: false,
+      };
+
+      for (const question of questionsOfLevel) {
+        const passed = user._doc.attempts.practice.find(attempt => {
+          return (String(question._id) === String(attempt._doc.question._id)) && attempt._doc.passed === true;
+        });
+
+        if (passed) overview.completed++;
+      }
+
+      levelCompleted = questionsOfLevel.length === overview.completed ? true : false;
+      overviews.push(overview);
+    });
+
+    response.overview = overviews;
+    res.status(200).json(response);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err });
+  }
+}
+
+// Get user overview for a level in practice
+exports.getOverviewOfLevel = async (req, res) => {
+  if (!req.params[ROUTES.LEVEL]) return res.status(400).json({message: 'Required parameter not present'});
+  try {
+    const [questionsOfLevel, user] = await Promise.all([
+      PracticeQ.find()
+        .select('-testcases -__v')
+        .where('level', parseInt(req.params[ROUTES.LEVEL])),
+      User.findById(req.userData.userId)
+    ]);
+
+    const response = {
+      level: parseInt(req.params[ROUTES.LEVEL]),
+      category: '',
+      attemptsOverview: null
+    }
+    const levelOverview = [];
+
+    for (const question of questionsOfLevel) {
+      let questionOverview = {
+        questionId: question._doc._id,
+        title: question._doc.title,
+        difficulty: question._doc.difficulty,
+        pointsAllocated: Number(question._doc.pointsAllocated),
+        attempts: 0,
+        passed: false
+      }
+
+      const userAttempt = user._doc.attempts.practice
+        .find(attempt => String(attempt._doc.question._id) === String(question._doc._id));
+        
+      if (userAttempt) {
+        questionOverview.attempts = Number(userAttempt._doc.count);
+        questionOverview.passed = userAttempt._doc.passed;
+      }
+
+      levelOverview.push(questionOverview);
+    }
+
+    response.category = questionsOfLevel[0]._doc.category;
+    response.attemptsOverview = levelOverview;
+    res.status(200).json(response);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err });
+  }
+}
 
 //Get question by id
 exports.get_one = (req, res) => {

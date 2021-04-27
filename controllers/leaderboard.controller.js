@@ -1,5 +1,6 @@
 const User = require("../models/user"),
       mongoose = require('mongoose');
+const { ROUTES } = require("../resources/constants");
 
 // get the leaderboard rankings
 exports.rankings = async (req, res) => {
@@ -53,7 +54,7 @@ exports.rankings = async (req, res) => {
 
 // search the leaderboard for user & get ranking details
 exports.getUserRanking = async (req, res) => {
-  if (!req.params.userId) return res.status(400).json({message: 'UserId is not present'});
+  if (!req.params[ROUTES.USERID]) return res.status(400).json({message: 'UserId is not present'});
 
   try {
     const user = await User.aggregate([
@@ -61,7 +62,7 @@ exports.getUserRanking = async (req, res) => {
       { $project: { password: 0, __v: 0 } },
       { $group: { _id: '', ranked: { $push: '$$ROOT'} } },
       { $unwind: { path: '$ranked', includeArrayIndex: 'rank' } },
-      { $match: { 'ranked._id': mongoose.Types.ObjectId(req.params.userId) } },
+      { $match: { 'ranked._id': mongoose.Types.ObjectId(req.params[ROUTES.USERID]) } },
       { $project: 
           { 
               _id: '$ranked._id',

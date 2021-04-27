@@ -5,7 +5,7 @@ const constants = require("../resources/constants");
 module.exports = (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
-    console.log(token);
+    // console.log(token);
     const decoded = jwt.verify(token, ENV.JWT_KEY);
 
     // check if the user is an admin - if admin user consumable APIs are restricted

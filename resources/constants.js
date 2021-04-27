@@ -39,16 +39,16 @@ module.exports = Object.freeze({
         AUTOCOMPLETE: 'autocomplete',
         PERFORMANCE: 'performance',
         USERID: 'userId',
-        USERIDPARAM: ':userId',
         // competeQuestion.routes
         COMPETEQ: 'competequestion',
         BYCATGEORY: 'bycategory',
         // practiceQuestion.routes
         PRACTICEQ: 'questions',
         BYLEVEL: 'bylevel',
+        OVERVIEW: 'overview',
+        LEVEL: 'level',
 
         QUESTIONID: 'questionId',
-        QUESTIONIDPARAM: ':questionId',
         // answer.routes
         ANSWER: 'answer',
         PRACTICEANSWER: 'practice',
@@ -64,8 +64,6 @@ module.exports = Object.freeze({
         // tutorial.routes
         TUTORIAL: 'tutorial',
         TUTORIALID: 'tutorialId',
-        TUTORIALIDPARAM: ':tutorialId',
         TUTORIALLEVEL: 'tutelevel',
-        TUTORIALLEVELPARAM: ':tutelevel',
     }
 });

@@ -5,13 +5,13 @@ const TutorialController = require('../controllers/tutorial.controller'),
 
 // Tutorial section get by id
 router.get(
-    `/${ROUTES.TUTORIALIDPARAM}`,
+    `/:${ROUTES.TUTORIALID}`,
     TutorialController.getTutorialById
 );
 
 // Tutorial get by level
 router.get(
-    `/${ROUTES.TUTORIALLEVEL}/${ROUTES.TUTORIALLEVELPARAM}`,
+    `/${ROUTES.TUTORIALLEVEL}/:${ROUTES.TUTORIALLEVEL}`,
     TutorialController.getTutorialByLevel
 );
 

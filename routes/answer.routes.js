@@ -5,28 +5,28 @@ const AnswerController = require("../controllers/answer.controller"),
 // Run answer for practice question
 // Does not update the user score, attempts or level
 router.post(
-    `/${ROUTES.PRACTICERUN}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.PRACTICERUN}/:${ROUTES.QUESTIONID}`,
     AnswerController.runPracticeAnswer
 );
 
 // Answer practice question
 // Updates the user score, attempts & level
 router.post(
-    `/${ROUTES.PRACTICEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.PRACTICEANSWER}/:${ROUTES.QUESTIONID}`,
     AnswerController.practiceAnswer
 );
 
 // Run answer for compete question
 // Does not update the user score, attempts or level
 router.post(
-    `/${ROUTES.COMPETERUN}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.COMPETERUN}/:${ROUTES.QUESTIONID}`,
     AnswerController.runCompeteAnswer
 );
 
 // Answer compete question 
 // Updates the user score, attempts & level
 router.post(
-    `/${ROUTES.COMPETEANSWER}/${ROUTES.QUESTIONIDPARAM}`,
+    `/${ROUTES.COMPETEANSWER}/:${ROUTES.QUESTIONID}`,
     AnswerController.competeAnswer
 );
 

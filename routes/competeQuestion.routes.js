@@ -10,7 +10,7 @@ router.get(`/`, CompeteController.getAll);
 router.get(`/${ROUTES.BYCATGEORY}`, CompeteController.getByCategory);
 
 // Get by id
-router.get(`/${ROUTES.QUESTIONIDPARAM}`, CompeteController.getOne);
+router.get(`/:${ROUTES.QUESTIONID}`, CompeteController.getOne);
 
 
 module.exports = router;
