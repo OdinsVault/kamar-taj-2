@@ -1,6 +1,6 @@
 const {exec} = require('child_process'),
       {join} = require('path'),
-      {CODEDIR} = require('../resources/constants'),
+      {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
       {promisify} = require('util'),
       {unlink, stat, writeFile} = require('fs');
 
@@ -14,10 +14,9 @@ const {exec} = require('child_process'),
     * 'compilerResult': {'status': Number, 'stdout': String, 'stderr': String},
     * 'failedTest': {},
     * passed: Boolean}} output - Output object to be populated
- * @param {String} mainClass - main class name exactly as in the code
  * @param {String} userId - userId of the user
  */
-const runTestCases = async (testCases, output, mainClass, userId) => {
+const runTestCases = async (testCases, output, userId) => {
     // generate unique filename for each compilation
     const className = `Class${userId}${Date.now()}`;
     const filePath = join(CODEDIR, `${className}.java`);
@@ -29,7 +28,7 @@ const runTestCases = async (testCases, output, mainClass, userId) => {
     try {
         // Replace the class name within the code &
         // create temp file with code
-        await writeFilePromise(filePath, output.answer.replace(new RegExp(mainClass, 'g'), className));
+        await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
 
         // compile
         const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});

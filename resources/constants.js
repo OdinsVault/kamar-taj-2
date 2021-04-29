@@ -17,6 +17,7 @@ module.exports = Object.freeze({
 
     // Test runner
     CODEDIR: 'temp-code',
+    MAIN_CLASS: 'Main',
 
     // App roles
     ROLE: {

@@ -1,6 +1,6 @@
 const {exec} = require('child_process'),
       {join} = require('path'),
-      {CODEDIR} = require('../resources/constants'),
+      {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
       {promisify} = require('util'),
       {unlink, stat, writeFile} = require('fs');
 
@@ -11,7 +11,6 @@ const {exec} = require('child_process'),
     * 'inputs': String,
     * 'outputs': String,
     * 'output': Object,
-    * 'mainClass': String,
     * userId: String}} params - Input parameters object
  */
 const runAnswer = async (params) => {
@@ -28,7 +27,7 @@ const runAnswer = async (params) => {
     try {
         // Replace the class name within the code &
         // create temp file with code
-        await writeFilePromise(filePath, output.answer.replace(new RegExp(params.mainClass, 'g'), className));
+        await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
 
         // compile
         const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
