@@ -2,7 +2,6 @@ const User = require("../models/user");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const ExceptionHandler = require("../exceptions/ExceptionHandler");
 const { ROUTES, XP, ROLE, ENV } = require("../resources/constants");
 
 //Signup User
@@ -61,45 +60,43 @@ exports.signup = async (req, res) => {
 };
 
 //Login
-exports.login = (req, res) => {
-  User.findOne({ email: req.body.email })
-    .exec()
-    .then((user) => {
-      if (user === null) {
-        return res.status(401).json({
-          message: "Authentication failed!",
-        });
-      }
-      bcrypt.compare(req.body.password, user.password, (err, result) => {
-        if (err) {
-          return res.status(401).json({
-            message: "Authentication failed!",
-          });
-        }
-        if (result) {
-          const token = jwt.sign(
-            {
-              email: user.email,
-              userId: user._id,
-              roles: [ROLE.USER]
-            },
-            ENV.JWT_KEY,
-            {
-              expiresIn: "1h",
-            }
-          );
-          return res.status(200).json({
-            message: "Authentication successful!",
-            token: token,
-          });
-        }
-        res.status(401).json({
-          message: "Authentication failed!",
-        });
+exports.login = async (req, res) => {
+  // if required params not found return with error
+  if (!req.body.email || req.body.email === '' ||
+  !req.body.password || req.body.password === '')
+    return res.status(400).json({message: 'Authentication falied!', error: 'Required values missing for login'});
+
+    try {
+      const user = await User.findOne({ email: req.body.email });
+
+      if (!user) 
+        return res.status(401)
+        .json({message: 'Authentication falied!', error: `No user found with the email ${req.body.email}`});
+
+      const passwordOkay = await bcrypt.compare(req.body.password, user._doc.password);
+      if (!passwordOkay) 
+        return res.status(401).json({message: 'Authentication falied!', error: 'Password is incorrect'});
+
+      const token = jwt.sign(
+        {
+          email: user.email,
+          userId: user._id,
+          roles: [ROLE.USER]
+        },
+        ENV.JWT_KEY,
+        { expiresIn: "1h" }
+      );
+      
+      res.status(200).json({
+        message: "Authentication successful!",
+        token: token,
       });
-    })
-    .catch(ExceptionHandler.handleError);
-};
+
+    } catch (err) {
+      console.log(err);
+      res.status(401).json({message: 'Authentication falied!', error: err});
+    }
+}
 
 //Delete own User profile
 exports.deleteUser = (req, res) => {
@@ -118,27 +115,6 @@ exports.deleteUser = (req, res) => {
         error: err,
       });
     });
-};
-
-//Get all users
-exports.getAllUsers = (req, reg, next) => {
-  User.find()
-    .select("_id fname lname email")
-    .exec()
-    .then((docs) => {
-      const response = {
-        userCount: docs.length,
-        users: docs.map((doc) => {
-          return {
-            id: doc._id,
-            fname: doc.fname,
-            lname: doc.lname,
-            email: doc.email,
-          };
-        }),
-      };
-    })
-    .catch();
 };
 
 /**
