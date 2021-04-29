@@ -73,6 +73,10 @@ exports.getLevelsOverview = async (req, res) => {
       Tutorial.find()
     ]);
 
+    if (questionsByLevel.length === 0 ||
+      !user || tutorials.length === 0)
+        return res.status(404).json({message: 'Some of the resources could not be found'});
+
     const response = {
       userLevel: user._doc.completion,
       totalQuestionLevels: questionsByLevel.length,
@@ -110,7 +114,10 @@ exports.getLevelsOverview = async (req, res) => {
 
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: err });
+    res.status(500).json({
+      message: 'Error occurred while generating overview for levels',
+      error: err
+    });
   }
 }
 
@@ -121,7 +128,7 @@ exports.getOverviewOfLevel = async (req, res) => {
     const response = {
       level: parseInt(req.params[ROUTES.LEVEL]),
       title: '',
-      attemptsOverview: null
+      attemptsOverview: []
     }
 
     const [questionsOfLevel, user, tutorial] = await Promise.all([
@@ -132,7 +139,9 @@ exports.getOverviewOfLevel = async (req, res) => {
       Tutorial.findOne({level: response.level}).select('title')
     ]);
 
-    const levelOverview = [];
+    if (questionsOfLevel.length === 0 ||
+      !user || !tutorial)
+        return res.status(404).json({message: 'Some of the resources could not be found'});
 
     for (const question of questionsOfLevel) {
       let questionOverview = {
@@ -153,15 +162,17 @@ exports.getOverviewOfLevel = async (req, res) => {
         questionOverview.passed = userAttempt._doc.passed;
       }
 
-      levelOverview.push(questionOverview);
+      response.attemptsOverview.push(questionOverview);
     }
 
     response.title = tutorial._doc.title? tutorial._doc.title : '';
-    response.attemptsOverview = levelOverview;
     res.status(200).json(response);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: err });
+    res.status(500).json({
+      message: `Error occurred while generating overview for level ${req.params[ROUTES.LEVEL]}`,
+      error: err
+    });
   }
 }
 
@@ -181,7 +192,10 @@ exports.get_one = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      res.status(500).json({ error: err });
+      res.status(500).json({
+        message: 'Error occurred while fetching practice questions by id',
+        error: err 
+      });
     });
 };
 
