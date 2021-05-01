@@ -34,7 +34,7 @@ exports.runPracticeAnswer = async (req, res) => {
         // Check if user is authorized to answer the question - compare user level & question level
         if (user._doc.completion !== answeredQ._doc.level)
             return res.status(401).json({
-                message: 'User\'s level is too low to answer this question',
+                message: 'Your level is too low to answer this question',
                 status: {
                     requiredLevel: answeredQ._doc.level,
                     userLevel: user._doc.level

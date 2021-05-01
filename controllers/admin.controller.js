@@ -42,7 +42,32 @@ exports.login = async (req, res) => {
 
 // Practice Question admin handlers
 exports.createPracticeQ = async (req, res) => {
+    const practiceQReqProps = [
+        'title',
+        'description',
+        'inputs',
+        'outputs',
+        'difficulty',
+        'level',
+        'category',
+        'testcases',
+        'pointsAllocated'
+    ];
+
+    // check if all the required props are provided
+    const reqPropsAvailable = practiceQReqProps.every(prop => Object.keys(req.body).includes(prop));
+
+    if (!reqPropsAvailable)
+        return res.status(400).json({message: 'Not all the required properties for a Practice question are provided!'});
+
     try {
+
+        // check if a tutorial is available for this question
+        const tutorialForLevel = await Tutorial.findOne({level: req.body.level});
+        if (!tutorialForLevel)
+            return res.status(404).json({
+                message: `Tutorial for level ${req.body.level} not found. Please add tutorial for level ${req.body.level} & then add questions.`});
+
         const question = new PracticeQ({
             _id: new mongoose.Types.ObjectId(),
             title: req.body.title,
@@ -53,13 +78,14 @@ exports.createPracticeQ = async (req, res) => {
             level: req.body.level,
             category: req.body.category,
             testcases: req.body.testcases,
-            pointsAllocated: req.body.pointsAllocated,
+            pointsAllocated: Number(req.body.pointsAllocated),
           });
 
         const saved = await question.save();
+        delete saved._doc.__v;
 
         const response = {
-                message: "Practice question saved successfully!",
+                message: 'Practice question saved successfully!',
                 created: saved._doc,
                 request: {
                 type: 'GET',
@@ -82,6 +108,12 @@ exports.updatePracticeQ = async (req, res) => {
     if (!id || id === '') return res.status(400).json({message: 'Question id is not present'});
 
     try {
+        // check if a tutorial is available for this question
+        const tutorialForLevel = await Tutorial.findOne({level: req.body.level});
+        if (!tutorialForLevel)
+            return res.status(404).json({
+                message: `Tutorial for level ${req.body.level} not found. Please add tutorial for level ${req.body.level} & then add questions.`});
+
         const updatedQ = await PracticeQ
         .findOneAndUpdate({_id: id}, req.body, {new: true}).select('-__v');
 
@@ -145,6 +177,22 @@ exports.deletePracticeQ = async (req, res) => {
 // Compete Question admin handlers
 exports.createCompeteQ = async (req, res) => {
 
+    const competeQReqProps = [
+        'title',
+        'description',
+        'inputs',
+        'outputs',
+        'difficulty',
+        'category',
+        'testcases',
+        'pointsAllocated'
+    ];
+
+    // check if all the required props are provided
+    const reqPropsAvailable = competeQReqProps.every(prop => Object.keys(req.body).includes(prop));
+    if (!reqPropsAvailable)
+        return res.status(400).json({message: 'Not all the required properties for a Compete question are provided!'});
+
       try {
         const question = new CompeteQ({
             _id: new mongoose.Types.ObjectId(),
@@ -155,7 +203,7 @@ exports.createCompeteQ = async (req, res) => {
             difficulty: req.body.difficulty,
             category: req.body.category,
             testcases: req.body.testcases,
-            pointsAllocated: req.body.pointsAllocated,
+            pointsAllocated: Number(req.body.pointsAllocated),
           });
 
         const saved = await question.save();
@@ -277,9 +325,9 @@ exports.addTutorial = async (req, res) => {
 
     } catch (err) {
         // handle unique index - level
-        if (err.codeName && err.codeName === 'DuplicateKey') {
+        if (err.code && err.code === 11000) {
             return res.status(409).json({
-            message: 'Error occured while adding tutorial',
+            message: 'A tutorial for this level already exists!',
             error: {
                 type: 'Duplicate value for unique attribute',
                 keyValue: err.keyValue,
@@ -330,7 +378,7 @@ exports.editTutorial = async (req, res) => {
         // handle unique index - level
         if (err.codeName && err.codeName === 'DuplicateKey') {
             return res.status(409).json({
-            message: 'Error occured while updating tutorial',
+            message: 'A tutorial with same level already exists!',
             error: {
                 type: 'Duplicate value for unique attribute',
                 keyValue: err.keyValue,
@@ -344,24 +392,49 @@ exports.editTutorial = async (req, res) => {
     }
 }
 
+/**
+ * Deletes the tutorial & associated questions for it
+ * @param {Request} req 
+ * @param {Response} res 
+ * @returns 
+ */
 exports.deleteTutorial = async (req, res) => {
     // check param
     const tutorialLevel = req.params[ROUTES.LEVEL];
     if (!tutorialLevel) return res.status(400).json({message: 'Tutorial level is not present'});
 
     try {
-        const deleted = await Tutorial.findOneAndDelete({level: tutorialLevel}).select('-__v');
+        const questionsOfLevel = await PracticeQ.find({level: tutorialLevel}).select('-__v');
 
-        if (!deleted) 
+        const updatePromises = [];
+        // delete the tutorial
+        updatePromises.push(Tutorial.findOneAndDelete({level: tutorialLevel}).select('-__v'));
+
+        // delete the questions
+        // remove the ref from users for questions
+        if (questionsOfLevel.length > 0) {
+            questionsOfLevel.forEach(q => {
+                updatePromises.push(q.deleteOne());
+                updatePromises.push(User.updateMany(
+                    {'attempts.practice.question': q._id},
+                    {$pull: {'attempts.practice': {question: q._id}}}));
+            });
+        }
+
+        // execute the deletion
+        const [deletedTutorial, ...rest] = await Promise.all(updatePromises);
+        
+        if (!deletedTutorial) 
             return res.status(404).json({message: `Tutorial not found for level ${tutorialLevel}`});
         
         res.status(200).json({
-            message: 'Tutorial deleted successfully',
-            deleted
+            message: 'Tutorial deleted successfully with all the questions!',
+            affectedQuestions: questionsOfLevel.length,
+            deleted: deletedTutorial
         });
     } catch (err) {
         res.status(500).json({
-            message: 'Error occurred while deleting tutorial',
+            message: `Error occurred while deleting tutorial and questions for level ${tutorialLevel}`,
             error: err
         });
     }

@@ -27,38 +27,46 @@ exports.get_all = (req, res) => {
     .catch((err) => {
       console.log(err);
       res.status(500).json({
+        message: 'Error occurred while fetching questions!',
         error: err,
       });
     });
 };
 
 //get question by level
-exports.get_by_level = (req, res) => {
-  PracticeQ.aggregate([
-    { $unset: '__v' },
-    { $group: { _id: "$level", questions: { $push: "$$ROOT" } } },
-    { $sort: { _id: 1 } },
-  ])
-    .exec()
-    .then((docs) => {
-      const response = {
-        levelCount: docs.length,
-        levels: docs.map((doc) => {
-          return {
-            level: doc._id,
-            questions: doc.questions,
-          };
-        }),
-      };
-      res.status(200).json(response);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        error: err,
-      });
+exports.get_by_level = async (req, res) => {
+  try {
+
+    const [questionsByLevel, tutorials] = await Promise.all([
+      PracticeQ.aggregate([
+        { $unset: '__v' },
+        { $group: { _id: '$level', questions: { $push: '$$ROOT' } } },
+        { $sort: { _id: 1 } },
+      ]),
+      Tutorial.find().select('-__v')
+    ]);
+
+    const response = {
+      levelCount: tutorials.length,
+      levels: tutorials.map((tutorial, index) => {
+        return {
+          level: index + 1,
+          title: tutorial.title,
+          questions: questionsByLevel[index]? questionsByLevel[index].questions : []
+        };
+      }),
+    };
+
+    res.status(200).json(response);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: 'Error occurred while fetching questions by levels!',
+      error: err,
     });
-};
+  }
+}
 
 // get question levels overview
 exports.getLevelsOverview = async (req, res) => {
@@ -73,9 +81,12 @@ exports.getLevelsOverview = async (req, res) => {
       Tutorial.find()
     ]);
 
-    if (questionsByLevel.length === 0 ||
-      !user || tutorials.length === 0)
-        return res.status(404).json({message: 'Some of the resources could not be found'});
+    if (questionsByLevel.length === 0)
+      return res.status(404).json({message: 'No questions for this level yet!'});
+    if (!user)
+      return res.status(404).json({message: 'User could not be found'});
+    if (tutorials.length === 0)
+      return res.status(404).json({message: 'Tutorials could not be found'});
 
     const response = {
       userLevel: user._doc.completion,
@@ -139,9 +150,12 @@ exports.getOverviewOfLevel = async (req, res) => {
       Tutorial.findOne({level: response.level}).select('title')
     ]);
 
-    if (questionsOfLevel.length === 0 ||
-      !user || !tutorial)
-        return res.status(404).json({message: 'Some of the resources could not be found'});
+    if (questionsOfLevel.length === 0)
+      return res.status(404).json({message: 'This level does not have any questions yet!'});  
+    if (!user) 
+    return res.status(404).json({message: 'User could not be found!'});
+    if (!tutorial)
+        return res.status(404).json({message: 'This level does not have a tutorial yet!'});
 
     for (const question of questionsOfLevel) {
       let questionOverview = {

@@ -3,7 +3,6 @@ const {exec} = require('child_process'),
       {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
       {promisify} = require('util'),
       {unlink, stat, writeFile} = require('fs');
-
 /**
  * Compile the answer code & runs the base test case.
  * Populates the output object. 
@@ -30,13 +29,13 @@ const runAnswer = async (params) => {
         await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
 
         // compile
-        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
+        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf8'});
         output.compilerResult.stdout = compilerResult.stdout;
 
         // try & run test cases
         try {
             // run base test async
-            const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, {encoding: 'utf-8'})
+            const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, {encoding: 'utf8'})
 
             // check each test result
             const stdOut = testResults.stdout.replace(new RegExp('\\r', 'g'), '');

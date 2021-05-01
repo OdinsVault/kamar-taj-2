@@ -58,6 +58,9 @@ exports.getByCategory = async (req, res) => {
             })
         };
 
+        if (questions.length === 0)
+            return res.status(404).json({message: 'Questions not found!'});
+
         res.status(200).json(response);
     } catch (err) {
         console.log(err);
@@ -80,7 +83,7 @@ exports.getOne = async (req, res) => {
     try {
         const question = await CompeteQ.findById(id).select('-__v');
 
-        if (!question) return res.status(404).json({ message: "No valid entry found for provided ID" });
+        if (!question) return res.status(404).json({ message: `No question found for id: ${id}` });
 
         res.status(200).json(question);
     } catch (err) {
@@ -108,9 +111,10 @@ exports.getCompeteOverview = async (req, res) => {
             User.findById(req.userData.userId)
         ]);
 
-        if (questionsByCat.length === 0 ||
-            !user)
-              return res.status(404).json({message: 'Some of the resources could not be found'});
+        if (questionsByCat.length === 0)
+            return res.status(404).json({message: 'No questions found!'});
+        if (!user)
+            return res.status(404).json({message: 'User could not be found!'});
 
         const response = {
             categoriesCount: questionsByCat.length,

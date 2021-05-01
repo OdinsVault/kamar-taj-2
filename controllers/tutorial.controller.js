@@ -22,7 +22,7 @@ exports.getTutorialByLevel = async (req, res) => {
 
         // find & send the tutorial data if found
         if (!tutorial) 
-            return res.status(404).json({message: 'No tutorial found for provided level'});
+            return res.status(404).json({message: `No tutorial found for level: ${tutorialLevel}`});
 
         const response = {
             totalTutorialsCount: tutorialsCount,

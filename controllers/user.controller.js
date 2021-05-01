@@ -47,7 +47,7 @@ exports.signup = async (req, res) => {
       // handle unique index - email
       if (err.code && err.code === 11000) {
         return res.status(409).json({
-          message: 'Error occured while saving user',
+          message: 'This email is already registered with another account, Please choose another!',
           error: {
             type: 'Duplicate value for unique attribute',
             keyValue: err.keyValue,
@@ -64,18 +64,18 @@ exports.login = async (req, res) => {
   // if required params not found return with error
   if (!req.body.email || req.body.email === '' ||
   !req.body.password || req.body.password === '')
-    return res.status(400).json({message: 'Authentication falied!', error: 'Required values missing for login'});
+    return res.status(400).json({message: 'Required values missing for login'});
 
     try {
       const user = await User.findOne({ email: req.body.email });
 
       if (!user) 
         return res.status(401)
-        .json({message: 'Authentication falied!', error: `No user found with the email ${req.body.email}`});
+        .json({message: `No user found with the email ${req.body.email}`});
 
       const passwordOkay = await bcrypt.compare(req.body.password, user._doc.password);
       if (!passwordOkay) 
-        return res.status(401).json({message: 'Authentication falied!', error: 'Password is incorrect'});
+        return res.status(401).json({message: 'Password is incorrect'});
 
       const token = jwt.sign(
         {
@@ -152,7 +152,7 @@ exports.getUser = async (req, res) => {
     res.status(200).json(user);
   } catch (err) {
     console.log(err);
-    res.status(500).json({status: 'Error occured while fetching user data', err});
+    res.status(500).json({message: 'Error occured while fetching user data', error: err});
   }
 };
 
@@ -200,7 +200,7 @@ exports.editUser = async (req, res) => {
       // handle unique index - email
       if (err.codeName && err.codeName === 'DuplicateKey') {
         return res.status(409).json({
-          message: 'Error occured while updating user',
+          message: 'This email is registered with another account!',
           error: {
             type: 'Duplicate value for unique attribute',
             keyValue: err.keyValue,
