@@ -50,7 +50,7 @@ exports.get_by_level = async (req, res) => {
       levelCount: tutorials.length,
       levels: tutorials.map((tutorial, index) => {
         return {
-          level: index + 1,
+          level: tutorial._doc.level,
           title: tutorial.title,
           questions: questionsByLevel[index]? questionsByLevel[index].questions : []
         };
