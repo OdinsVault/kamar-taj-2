@@ -43,7 +43,7 @@ exports.get_by_level = async (req, res) => {
         { $group: { _id: '$level', questions: { $push: '$$ROOT' } } },
         { $sort: { _id: 1 } },
       ]),
-      Tutorial.find().select('-__v')
+      Tutorial.find().select('-__v').sort('level')
     ]);
 
     const response = {
