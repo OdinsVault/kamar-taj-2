@@ -1,41 +1,45 @@
-const {exec} = require('child_process'),
-      {join} = require('path'),
-      {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
-      {promisify} = require('util'),
-      {unlink, stat, writeFile} = require('fs');
+const { exec } = require('child_process'),
+    { join } = require('path'),
+    { CODEDIR } = require('../resources/constants'),
+    mapSimplyCode = require('../utils/simplyMapper'),
+    { promisify } = require('util'),
+    { unlink, stat } = require('fs');
+
 /**
  * Compile the answer code & runs the base test case.
  * Populates the output object. 
  * @param {{
-    * 'inputs': String,
-    * 'outputs': String,
-    * 'output': Object,
-    * userId: String}} params - Input parameters object
+    * inputs: String,
+    * outputs: String,
+    * output: Object,
+    * userId: String,
+    * convert: Boolean
+    * }} params - Input parameters object
  */
 const runAnswer = async (params) => {
-    let {output, outputs} = params;
-    
+    let { output, outputs } = params;
+
     // generate unique filename for each compilation
     const className = `Class${params.userId}${Date.now()}`;
     const filePath = join(CODEDIR, `${className}.java`);
 
     // create promisified functions
     const execPromise = promisify(exec);
-    const writeFilePromise = promisify(writeFile);
 
     try {
-        // Replace the class name within the code &
-        // create temp file with code
-        await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
+        // always convert to english before compilation
+        const flags = params.convert ? 'sn eng' : 'eng eng';
+        // transpile the answer code & prevent the file from cleaning
+        await mapSimplyCode(req.body.answer, flags, filePath, false);
 
         // compile
-        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf8'});
+        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, { encoding: 'utf8' });
         output.compilerResult.stdout = compilerResult.stdout;
 
         // try & run test cases
         try {
             // run base test async
-            const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, {encoding: 'utf8'})
+            const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, { encoding: 'utf8' })
 
             // check each test result
             const stdOut = testResults.stdout.replace(new RegExp('\\r', 'g'), '');
@@ -48,7 +52,7 @@ const runAnswer = async (params) => {
                 },
                 status: -1,
                 stdout: stdOut,
-                stderr: (testResults.stderr === '')? null : testResults.stderr,
+                stderr: (testResults.stderr === '') ? null : testResults.stderr,
                 expected: outputs
             };
 
@@ -75,7 +79,7 @@ const runAnswer = async (params) => {
             };
         }
 
-    } catch (err) { 
+    } catch (err) {
         // set compiler results
         output.compilerResult.status = err.status || -1;
         output.compilerResult.stdout = err.stdout || '';
@@ -83,13 +87,13 @@ const runAnswer = async (params) => {
 
         console.log('Error while compiling answer', err);
     } finally {
-         // remove the temp files async
-         stat(filePath, (err, _) => {
-            if (!err) unlink(filePath, () => {}); 
-         });
-         stat(filePath.replace('.java', '.class'), (err, _) => {
-            if (!err) unlink(filePath.replace('.java', '.class'), () => {}); 
-         });
+        // remove the temp files async
+        stat(filePath, (err, _) => {
+            if (!err) unlink(filePath, () => { });
+        });
+        stat(filePath.replace('.java', '.class'), (err, _) => {
+            if (!err) unlink(filePath.replace('.java', '.class'), () => { });
+        });
     }
 }
 

@@ -4,7 +4,9 @@ const User = require('../models/user'),
       mongoose = require("mongoose"),
       runTests = require('../utils/runTests'),
       runAnswer = require('../utils/runAnswer'),
-      {ROUTES} = require('../resources/constants');
+    { ROUTES, CODEDIR } = require('../resources/constants'),
+    { join } = require('path'),
+    mapSimplyCode = require('../utils/simplyMapper');
 
 /**
  * Runs the base test case before submission of practice question.
@@ -59,6 +61,7 @@ exports.runPracticeAnswer = async (req, res) => {
             outputs: answeredQ._doc.outputs,
             output,
             userId: req.userData.userId,
+            convert: req.body.convert
         });
 
         const response = {
@@ -126,7 +129,7 @@ exports.practiceAnswer = async (req, res) => {
         };
 
         // Execute the tests & populate the output object
-        await runTests(answeredQ._doc.testcases, output, req.userData.userId);
+        await runTests(answeredQ._doc.testcases, output, req.userData.userId, req.body.convert);
 
         const response = {
             message: output.passed? 'Practice question answer passed':'Practice question answer failed',
@@ -269,6 +272,7 @@ exports.practiceAnswer = async (req, res) => {
             outputs: answeredQ._doc.outputs,
             output,
             userId: req.userData.userId,
+            convert: req.body.convert
         });
 
         const response = {
@@ -328,7 +332,7 @@ exports.competeAnswer = async (req, res) => {
         };
 
         // Execute the tests & populate the output object
-        await runTests(answeredQ._doc.testcases, output, req.userData.userId);
+        await runTests(answeredQ._doc.testcases, output, req.userData.userId, req.body.convert);
 
         const response = {
             message: output.passed? 'Compete question answer passed':'Compete question answer failed',
@@ -390,4 +394,45 @@ exports.competeAnswer = async (req, res) => {
             error: err
         });
     }
+}
+
+/**
+ * Perform the code translation from & to 
+ * english & Sinhala
+ * @param {Request} req
+ * @param {Response} res
+ * @returns Response
+ */
+exports.translateCode = async (req, res) => {
+
+    if (!req.body.answer)
+        return res.status(400).json({ message: 'Required values are not present!' });
+
+    let flags = 'eng sn';
+    // if convert - trnaslate from sinhala to english
+    if (req.body.convert) flags = 'sn eng';
+
+    // set the filepath with unique namae for this instance
+    const className = `Class${req.userData.userId}${Date.now()}`;
+    const filePath = join(CODEDIR, `${className}.simply`);
+
+    try {
+        const translated = await mapSimplyCode(req.body.answer, flags, filePath);
+
+        if (translated.stderr !== '')
+            return res.status(500).json({
+                message: 'Error orccurred while transpiling Simply code!',
+                err: translated.stderr
+            });
+
+        res.status(200).json(translated);
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Error occurred while transpiling the Simply code!',
+            error: err
+        });
+    }
+
 }

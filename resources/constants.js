@@ -66,5 +66,7 @@ module.exports = Object.freeze({
         TUTORIAL: 'tutorial',
         TUTORIALID: 'tutorialId',
         TUTORIALLEVEL: 'tutelevel',
+
+        TRANSLATE: 'translate'
     }
 });

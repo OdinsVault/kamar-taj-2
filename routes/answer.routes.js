@@ -30,5 +30,11 @@ router.post(
     AnswerController.competeAnswer
 );
 
+// Translate the answer code
+router.post(
+    `/${ROUTES.TRANSLATE}`,
+    AnswerController.translateCode
+)
+
 
 module.exports = router;

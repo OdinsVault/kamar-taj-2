@@ -1,44 +1,46 @@
-const {exec} = require('child_process'),
-      {join} = require('path'),
-      {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
-      {promisify} = require('util'),
-      {unlink, stat, writeFile} = require('fs');
+const { exec } = require('child_process'),
+    { join } = require('path'),
+    { CODEDIR } = require('../resources/constants'),
+    mapSimplyCode = require('../utils/simplyMapper'),
+    { promisify } = require('util'),
+    { unlink, stat } = require('fs');
 
 /**
  * Compile the answer code & runs the test cases.
  * Populates the output object. 
- * @param {[{'inputs': String, 'outputs': String, 'title': String, 'description': String}]} testCases - Array of testcases for question
+ * @param {[{inputs: String, outputs: String, title: String, description: String}]} testCases - Array of testcases for question
  * @param {{
-    * 'answer': String,
-    * 'testResults': [],
-    * 'compilerResult': {'status': Number, 'stdout': String, 'stderr': String},
-    * 'failedTest': {},
+    * answer: String,
+    * testResults: [],
+    * compilerResult: {status: Number, stdout: String, stderr: String},
+    * failedTest: {},
     * passed: Boolean}} output - Output object to be populated
  * @param {String} userId - userId of the user
+ * @param {Boolean} convert - Boolean flag to signal convert through mapper or not
  */
-const runTestCases = async (testCases, output, userId) => {
+const runTestCases = async (testCases, output, userId, convert) => {
     // generate unique filename for each compilation
     const className = `Class${userId}${Date.now()}`;
     const filePath = join(CODEDIR, `${className}.java`);
 
     // create promisified functions
     const execPromise = promisify(exec);
-    const writeFilePromise = promisify(writeFile);
 
     try {
-        // Replace the class name within the code &
-        // create temp file with code
-        await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
+        // always convert to english before compilation
+        const flags = convert ? 'sn eng' : 'eng eng';
+        // transpile the answer code & prevent the file from cleaning
+        await mapSimplyCode(req.body.answer, flags, filePath, false);
 
         // compile
-        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
+        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, { encoding: 'utf-8' });
         output.compilerResult.stdout = compilerResult.stdout;
 
         // create promises array for testcases
         const testcasePromises = [];
         testCases.forEach(test => {
             testcasePromises.push(
-                execPromise(`java -cp ${CODEDIR} ${className} ${test.inputs}`, {encoding: 'utf-8'})
+                execPromise(`java -cp ${CODEDIR} ${className} ${test.inputs}`, { encoding: 'utf-8' })
             );
         });
 
@@ -56,7 +58,7 @@ const runTestCases = async (testCases, output, userId) => {
                     testCase: testCases[index],
                     status: 0,
                     stdout: stdOut,
-                    stderr: (results.stderr === '')? null : results.stderr,
+                    stderr: (results.stderr === '') ? null : results.stderr,
                     expected: testCases[index].outputs
                 };
 
@@ -77,7 +79,7 @@ const runTestCases = async (testCases, output, userId) => {
             console.log('Error while running testcase', err);
         }
 
-    } catch (err) { 
+    } catch (err) {
         // set compiler results
         output.compilerResult.status = err.status || -1;
         output.compilerResult.stdout = err.stdout || '';
@@ -85,13 +87,13 @@ const runTestCases = async (testCases, output, userId) => {
 
         console.log('Error while compiling answer', err);
     } finally {
-         // remove the temp files async
-         stat(filePath, (err, _) => {
-            if (!err) unlink(filePath, () => {}); 
-         });
-         stat(filePath.replace('.java', '.class'), (err, _) => {
-            if (!err) unlink(filePath.replace('.java', '.class'), () => {}); 
-         });
+        // remove the temp files async
+        stat(filePath, (err, _) => {
+            if (!err) unlink(filePath, () => { });
+        });
+        stat(filePath.replace('.java', '.class'), (err, _) => {
+            if (!err) unlink(filePath.replace('.java', '.class'), () => { });
+        });
     }
 }
 
