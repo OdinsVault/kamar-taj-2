@@ -28,7 +28,7 @@ const runAnswer = async (params) => {
 
     try {
         // always convert to english before compilation
-        const flags = params.convert ? 'sn eng' : 'eng eng';
+        const flags = params.convert ? 'eng sn' : 'eng eng';
         // transpile the answer code & prevent the file from cleaning
         await mapSimplyCode(req.body.answer, flags, filePath, false);
 

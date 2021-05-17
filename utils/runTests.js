@@ -28,7 +28,7 @@ const runTestCases = async (testCases, output, userId, convert) => {
 
     try {
         // always convert to english before compilation
-        const flags = convert ? 'sn eng' : 'eng eng';
+        const flags = convert ? 'eng sn' : 'eng eng';
         // transpile the answer code & prevent the file from cleaning
         await mapSimplyCode(req.body.answer, flags, filePath, false);
 

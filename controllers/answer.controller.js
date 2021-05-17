@@ -408,9 +408,9 @@ exports.translateCode = async (req, res) => {
     if (!req.body.answer)
         return res.status(400).json({ message: 'Required values are not present!' });
 
-    let flags = 'eng sn';
+    let flags = 'sn eng';
     // if convert - trnaslate from sinhala to english
-    if (req.body.convert) flags = 'sn eng';
+    if (req.body.convert) flags = 'eng sn';
 
     // set the filepath with unique namae for this instance
     const className = `Class${req.userData.userId}${Date.now()}`;
