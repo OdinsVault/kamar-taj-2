@@ -8,7 +8,7 @@ const { exec } = require('child_process'),
  * Translate the simply code into english/sinhala from sinhala/english.
  * Creates a file in the FilePath & performs cleaning after transpilation, based on the boolean parameter `clean`.
  * @param {String} code - Code to translate
- * @param {String} flags - Flags to control the conversion - Ex: `'sn eng'` - sinhala to english
+ * @param {String} flags - Flags to control the conversion - Ex: `'sn eng'` - to sinhala from english
  * @param {String} filePath - File path with the file name & extension Ex: temp-code/test.simply
  * @param {Boolean} clean - Defaults to `true`. Signals whether to clean the created file - Used in the standalone endpoint for translating
  * @throws if error occurred while transpiling

@@ -4,7 +4,7 @@ const User = require('../models/user'),
       mongoose = require("mongoose"),
       runTests = require('../utils/runTests'),
       runAnswer = require('../utils/runAnswer'),
-    { ROUTES, CODEDIR } = require('../resources/constants'),
+    { ROUTES, CODEDIR, SN, ENG } = require('../resources/constants'),
     { join } = require('path'),
     mapSimplyCode = require('../utils/simplyMapper');
 
@@ -61,7 +61,7 @@ exports.runPracticeAnswer = async (req, res) => {
             outputs: answeredQ._doc.outputs,
             output,
             userId: req.userData.userId,
-            convert: req.body.convert
+            lang: req.body.lang
         });
 
         const response = {
@@ -129,7 +129,7 @@ exports.practiceAnswer = async (req, res) => {
         };
 
         // Execute the tests & populate the output object
-        await runTests(answeredQ._doc.testcases, output, req.userData.userId, req.body.convert);
+        await runTests(answeredQ._doc.testcases, output, req.userData.userId, req.body.lang);
 
         const response = {
             message: output.passed? 'Practice question answer passed':'Practice question answer failed',
@@ -272,7 +272,7 @@ exports.practiceAnswer = async (req, res) => {
             outputs: answeredQ._doc.outputs,
             output,
             userId: req.userData.userId,
-            convert: req.body.convert
+            lang: req.body.lang
         });
 
         const response = {
@@ -332,7 +332,7 @@ exports.competeAnswer = async (req, res) => {
         };
 
         // Execute the tests & populate the output object
-        await runTests(answeredQ._doc.testcases, output, req.userData.userId, req.body.convert);
+        await runTests(answeredQ._doc.testcases, output, req.userData.userId, req.body.lang);
 
         const response = {
             message: output.passed? 'Compete question answer passed':'Compete question answer failed',
@@ -405,12 +405,14 @@ exports.competeAnswer = async (req, res) => {
  */
 exports.translateCode = async (req, res) => {
 
-    if (!req.body.answer)
+    if (!req.body.answer || !req.body.lang)
         return res.status(400).json({ message: 'Required values are not present!' });
 
-    let flags = 'sn eng';
-    // if convert - trnaslate from sinhala to english
-    if (req.body.convert) flags = 'eng sn';
+    // default flags - to sinhala from english
+    let flags = `${SN} ${ENG}`;
+    // if lang is sinhala - translate to english from sinhala
+    if (req.body.lang === SN) flags = `${ENG} ${SN}`;
+    console.log(flags)
 
     // set the filepath with unique namae for this instance
     const className = `Class${req.userData.userId}${Date.now()}`;

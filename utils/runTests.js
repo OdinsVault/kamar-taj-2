@@ -1,6 +1,6 @@
 const { exec } = require('child_process'),
     { join } = require('path'),
-    { CODEDIR } = require('../resources/constants'),
+    { CODEDIR, SN, ENG } = require('../resources/constants'),
     mapSimplyCode = require('../utils/simplyMapper'),
     { promisify } = require('util'),
     { unlink, stat } = require('fs');
@@ -16,9 +16,9 @@ const { exec } = require('child_process'),
     * failedTest: {},
     * passed: Boolean}} output - Output object to be populated
  * @param {String} userId - userId of the user
- * @param {Boolean} convert - Boolean flag to signal convert through mapper or not
+ * @param {String} lang - The language of the answer code - `sn` for sinhala or `eng` for english
  */
-const runTestCases = async (testCases, output, userId, convert) => {
+const runTestCases = async (testCases, output, userId, lang) => {
     // generate unique filename for each compilation
     const className = `Class${userId}${Date.now()}`;
     const filePath = join(CODEDIR, `${className}.java`);
@@ -28,7 +28,7 @@ const runTestCases = async (testCases, output, userId, convert) => {
 
     try {
         // always convert to english before compilation
-        const flags = convert ? 'eng sn' : 'eng eng';
+        const flags = (lang === SN) ? `${ENG} ${SN}` : `${ENG} ${ENG}`;
         // transpile the answer code & prevent the file from cleaning
         await mapSimplyCode(req.body.answer, flags, filePath, false);
 

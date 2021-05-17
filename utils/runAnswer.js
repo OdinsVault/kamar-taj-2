@@ -1,6 +1,6 @@
 const { exec } = require('child_process'),
     { join } = require('path'),
-    { CODEDIR } = require('../resources/constants'),
+    { CODEDIR, SN, ENG } = require('../resources/constants'),
     mapSimplyCode = require('../utils/simplyMapper'),
     { promisify } = require('util'),
     { unlink, stat } = require('fs');
@@ -13,7 +13,7 @@ const { exec } = require('child_process'),
     * outputs: String,
     * output: Object,
     * userId: String,
-    * convert: Boolean
+    * lang: String
     * }} params - Input parameters object
  */
 const runAnswer = async (params) => {
@@ -28,7 +28,7 @@ const runAnswer = async (params) => {
 
     try {
         // always convert to english before compilation
-        const flags = params.convert ? 'eng sn' : 'eng eng';
+        const flags = params.lang === SN ? `${ENG} ${SN}` : `${ENG} ${ENG}`;
         // transpile the answer code & prevent the file from cleaning
         await mapSimplyCode(req.body.answer, flags, filePath, false);
 

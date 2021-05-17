@@ -19,6 +19,10 @@ module.exports = Object.freeze({
     CODEDIR: 'temp-code',
     MAIN_CLASS: 'Main',
 
+    // code lang
+    SN: 'sn',
+    ENG: 'eng',
+
     // App roles
     ROLE: {
         ADMIN: 'admin',
