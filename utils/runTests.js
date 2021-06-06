@@ -1,7 +1,8 @@
 const {exec} = require('child_process'),
       {join} = require('path'),
       {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
-      {promisify} = require('util'),
+    { promisify } = require('util'),
+    { compileCode, execute } = require('./runner'),
       {unlink, stat, writeFile} = require('fs');
 
 /**
@@ -22,7 +23,7 @@ const runTestCases = async (testCases, output, userId) => {
     const filePath = join(CODEDIR, `${className}.java`);
 
     // create promisified functions
-    const execPromise = promisify(exec);
+    // const execPromise = promisify(exec);
     const writeFilePromise = promisify(writeFile);
 
     try {
@@ -30,15 +31,21 @@ const runTestCases = async (testCases, output, userId) => {
         // create temp file with code
         await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
 
+        const compileProcessArgs = ['-d', `${CODEDIR}`, `${filePath}`];
         // compile
-        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
+        // const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
+        const compilerResult = await compileCode(compileProcessArgs);
         output.compilerResult.stdout = compilerResult.stdout;
 
         // create promises array for testcases
         const testcasePromises = [];
+        const runProcessArgs = ['-cp', `${CODEDIR}`, `${className}`];
+
         testCases.forEach(test => {
+            const runProcessStdin = `${test.inputs.trim()} `;
             testcasePromises.push(
-                execPromise(`java -cp ${CODEDIR} ${className} ${test.inputs}`, {encoding: 'utf-8'})
+                // execPromise(`java -cp ${CODEDIR} ${className} ${test.inputs}`, {encoding: 'utf-8'})
+                execute(runProcessArgs, runProcessStdin)
             );
         });
 
@@ -81,7 +88,7 @@ const runTestCases = async (testCases, output, userId) => {
         // set compiler results
         output.compilerResult.status = err.status || -1;
         output.compilerResult.stdout = err.stdout || '';
-        output.compilerResult.stderr = err.stderr || err;
+        output.compilerResult.stderr = err.stderr || `${err}`;
 
         console.log('Error while compiling answer', err);
     } finally {
