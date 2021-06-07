@@ -38,7 +38,7 @@ const runAnswer = async (params) => {
         // try & run test cases
         try {
             const runProcessArgs = ['-cp', `${CODEDIR}`, `${className}`];
-            const runProcessStdin = `${params.inputs.trim()} `;
+            const runProcessStdin = `${params.inputs.trim()} `.replace(new RegExp(/\s/, 'g'), '\n');
 
             // run base test async
             // const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, {encoding: 'utf8'})

@@ -42,7 +42,7 @@ const runTestCases = async (testCases, output, userId) => {
         const runProcessArgs = ['-cp', `${CODEDIR}`, `${className}`];
 
         testCases.forEach(test => {
-            const runProcessStdin = `${test.inputs.trim()} `;
+            const runProcessStdin = `${test.inputs.trim()} `.replace(new RegExp(/\s/, 'g'), '\n');;
             testcasePromises.push(
                 // execPromise(`java -cp ${CODEDIR} ${className} ${test.inputs}`, {encoding: 'utf-8'})
                 execute(runProcessArgs, runProcessStdin)
