@@ -70,6 +70,8 @@ module.exports = Object.freeze({
         TUTORIAL: 'tutorial',
         TUTORIALID: 'tutorialId',
         TUTORIALLEVEL: 'tutelevel',
+        //visualizer.routes
+        VISUALIZER: 'visualizer',
 
         TRANSLATE: 'translate'
     }

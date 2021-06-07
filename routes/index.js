@@ -44,5 +44,12 @@ router.use(
         require('./admin.routes')
     );
 
+//Visualizer routes
+router.use(
+    `/${ROUTES.VISUALIZER}`,
+    require('./visualizer.routes')
+    
+);
+
 
 module.exports = router;
