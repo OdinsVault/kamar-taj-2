@@ -1,4 +1,3 @@
-
 const {exec} = require('child_process'),
       {join} = require('path'),
       {CODEDIR, MAIN_CLASS, SN, ENG} = require('../resources/constants'),
@@ -34,6 +33,8 @@ const runAnswer = async (params) => {
         const flags = params.lang === SN ? `${ENG} ${SN}` : `${ENG} ${ENG}`;
         // transpile the answer code & prevent the file from cleaning
         await mapSimplyCode(req.body.answer, flags, filePath, false);
+
+        await writeFilePromise(filePath, output.answer.replace(new RegExp(MAIN_CLASS, 'g'), className));
 
         const compileProcessArgs = ['-d', `${CODEDIR}`, `${filePath}`];
         // compile
