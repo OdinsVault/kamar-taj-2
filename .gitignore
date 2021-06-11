@@ -116,8 +116,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-*.jar
+mapper/
 test.*
 *.test.*
 *.java
-/temp-code

@@ -19,6 +19,12 @@ module.exports = Object.freeze({
     CODEDIR: 'temp-code',
     MAIN_CLASS: 'Main',
 
+    // code lang
+    SN: 'sn',
+    ENG: 'eng',
+    SN_ERR: 'sn_error',
+    ENG_ERR: 'eng_error',
+
     // App roles
     ROLE: {
         ADMIN: 'admin',
@@ -66,5 +72,9 @@ module.exports = Object.freeze({
         TUTORIAL: 'tutorial',
         TUTORIALID: 'tutorialId',
         TUTORIALLEVEL: 'tutelevel',
+        //visualizer.routes
+        VISUALIZE: 'visualize',
+
+        TRANSLATE: 'translate'
     }
 });
