@@ -3,7 +3,7 @@ const VisualizerController = require('../controllers/visualizer.controller'),
       {ROUTES} = require('../resources/constants');
 
 
-      router.get(`/get`, VisualizerController.visualize);
+      router.get(`/${ROUTES.VISUALIZE}`, VisualizerController.visualize);
 
 
       module.exports = router;

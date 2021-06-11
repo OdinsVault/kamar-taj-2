@@ -22,6 +22,8 @@ module.exports = Object.freeze({
     // code lang
     SN: 'sn',
     ENG: 'eng',
+    SN_ERR: 'sn_error',
+    ENG_ERR: 'eng_error',
 
     // App roles
     ROLE: {
@@ -71,7 +73,7 @@ module.exports = Object.freeze({
         TUTORIALID: 'tutorialId',
         TUTORIALLEVEL: 'tutelevel',
         //visualizer.routes
-        VISUALIZER: 'visualizer',
+        VISUALIZE: 'visualize',
 
         TRANSLATE: 'translate'
     }

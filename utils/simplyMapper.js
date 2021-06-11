@@ -22,6 +22,7 @@ const mapSimplyCode = async (code, flags, filePath, clean = true) => {
   const to = flags.split(" ")[0];
   const from = flags.split(" ")[1];
   const keywords = mapping.keywords;
+
   var codeBlock = code.toString();
 
   try {
@@ -33,8 +34,8 @@ const mapSimplyCode = async (code, flags, filePath, clean = true) => {
       `java -jar ${CODEDIR}/MapperJar.jar ${flags} ${filePath}`
     );
     // await for the transpilation to finish
-    // else file might be cleaned before promise execution
-
+    // else file might be cleaned before promise 
+    
     if (to !== from) {
       if (to !== "eng") {
         if (to.includes("_error")) {
