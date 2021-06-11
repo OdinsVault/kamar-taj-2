@@ -189,9 +189,9 @@ exports.practiceAnswer = async (req, res) => {
           ]);
 
         // if all passed for current level, increment the level & add level completion badge
-        const questionsOfLevel = questionByLevels[updatedUser._doc.completion].questions;
+        const questionsOfLevel = questionByLevels[updatedUser._doc.completion - 1].questions;
         const levelCompleted = questionsOfLevel
-                .every(qId => {
+            .every(qId => {
                     return updatedUser._doc.attempts.practice.find(attempt => {
                         return (String(qId) === String(attempt._doc.question._id)) && attempt._doc.passed === true;
                     });
