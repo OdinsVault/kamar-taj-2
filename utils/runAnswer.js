@@ -1,9 +1,10 @@
-const { exec } = require('child_process'),
-    { join } = require('path'),
-    { CODEDIR, SN, ENG } = require('../resources/constants'),
-    mapSimplyCode = require('../utils/simplyMapper'),
+
+const {exec} = require('child_process'),
+      {join} = require('path'),
+      {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
     { promisify } = require('util'),
-    { unlink, stat } = require('fs');
+    { compileCode, execute } = require('./runner'),
+      {unlink, stat, writeFile} = require('fs');
 
 /**
  * Compile the answer code & runs the base test case.
@@ -24,7 +25,8 @@ const runAnswer = async (params) => {
     const filePath = join(CODEDIR, `${className}.java`);
 
     // create promisified functions
-    const execPromise = promisify(exec);
+    // const execPromise = promisify(exec);
+    const writeFilePromise = promisify(writeFile);
 
     try {
         // always convert to english before compilation
@@ -32,14 +34,20 @@ const runAnswer = async (params) => {
         // transpile the answer code & prevent the file from cleaning
         await mapSimplyCode(req.body.answer, flags, filePath, false);
 
+        const compileProcessArgs = ['-d', `${CODEDIR}`, `${filePath}`];
         // compile
-        const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, { encoding: 'utf8' });
+        // const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf8'});
+        const compilerResult = await compileCode(compileProcessArgs);
         output.compilerResult.stdout = compilerResult.stdout;
 
         // try & run test cases
         try {
+            const runProcessArgs = ['-cp', `${CODEDIR}`, `${className}`];
+            const runProcessStdin = `${params.inputs.trim()} `.replace(new RegExp(/\s/, 'g'), '\n');
+
             // run base test async
-            const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, { encoding: 'utf8' })
+            // const testResults = await execPromise(`java -cp ${CODEDIR} ${className} ${params.inputs}`, {encoding: 'utf8'})
+            const testResults = await execute(runProcessArgs, runProcessStdin);
 
             // check each test result
             const stdOut = testResults.stdout.replace(new RegExp('\\r', 'g'), '');
@@ -83,7 +91,7 @@ const runAnswer = async (params) => {
         // set compiler results
         output.compilerResult.status = err.status || -1;
         output.compilerResult.stdout = err.stdout || '';
-        output.compilerResult.stderr = err.stderr || err;
+        output.compilerResult.stderr = err.stderr || `${err}`;
 
         console.log('Error while compiling answer', err);
     } finally {
