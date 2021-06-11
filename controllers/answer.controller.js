@@ -4,11 +4,11 @@ const User = require('../models/user'),
       mongoose = require("mongoose"),
       runTests = require('../utils/runTests'),
       runAnswer = require('../utils/runAnswer'),
-    { ROUTES, CODEDIR, SN, ENG } = require('../resources/constants'),
-    { join } = require('path'),
-    mapSimplyCode = require('../utils/simplyMapper');
-
-/**
+      { ROUTES, CODEDIR, SN, ENG } = require('../resources/constants'),
+      { join } = require('path'),
+      mapSimplyCode = require('../utils/simplyMapper');
+      
+      /**
  * Runs the base test case before submission of practice question.
  * Does not update the user score, attempts or levels
  * @param {Request} req 
@@ -41,7 +41,7 @@ exports.runPracticeAnswer = async (req, res) => {
         //             requiredLevel: answeredQ._doc.level,
         //             userLevel: user._doc.level
         //         }
-            // });
+        //     });
 
         // run the tests & collect the console output to response object
         const output = {
@@ -194,9 +194,9 @@ exports.practiceAnswer = async (req, res) => {
           ]);
 
         // if all passed for current level, increment the level & add level completion badge
-        const questionsOfLevel = questionByLevels[updatedUser._doc.completion].questions;
+        const questionsOfLevel = questionByLevels[updatedUser._doc.completion - 1].questions;
         const levelCompleted = questionsOfLevel
-                .every(qId => {
+            .every(qId => {
                     return updatedUser._doc.attempts.practice.find(attempt => {
                         return (String(qId) === String(attempt._doc.question._id)) && attempt._doc.passed === true;
                     });
@@ -407,7 +407,7 @@ exports.competeAnswer = async (req, res) => {
  * @param {Response} res
  * @returns Response
  */
-exports.translateCode = async (req, res) => {
+ exports.translateCode = async (req, res) => {
 
     if (!req.body.answer || !req.body.lang)
         return res.status(400).json({ message: 'Required values are not present!' });
