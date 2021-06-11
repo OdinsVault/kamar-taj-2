@@ -116,7 +116,7 @@ exports.getLevelsOverview = async (req, res) => {
         if (passed) overview.completed++;
       }
 
-      levelCompleted = questionsOfLevel.length === overview.completed ? true : false;
+      overview.levelCompleted = questionsOfLevel.length === overview.completed ? true : false;
       overviews.push(overview);
     });
 
