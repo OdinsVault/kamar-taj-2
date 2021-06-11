@@ -24,24 +24,24 @@ exports.runPracticeAnswer = async (req, res) => {
         const user = await User.findById(req.userData.userId);
         if (!user) return res.status(404).json({message: 'User not found'});
         // If already answered & passed, return without running tests or updating score
-        let questionAttempt = user._doc.attempts.practice
-            .find(attempt => String(attempt._doc.question._id) === String(id));
-        if (questionAttempt && questionAttempt.passed) 
-            return res.status(200).json({message: 'Question already answered correctly'});
+        // let questionAttempt = user._doc.attempts.practice
+        //     .find(attempt => String(attempt._doc.question._id) === String(id));
+        // if (questionAttempt && questionAttempt.passed) 
+        //     return res.status(200).json({message: 'Question already answered correctly'});
 
         // Get the question 
         const answeredQ = await PracticeQ.findById(id);
         if (!answeredQ) return res.status(404).json({message: 'Question not found'});
 
         // Check if user is authorized to answer the question - compare user level & question level
-        if (user._doc.completion !== answeredQ._doc.level)
-            return res.status(401).json({
-                message: 'Your level is too low to answer this question',
-                status: {
-                    requiredLevel: answeredQ._doc.level,
-                    userLevel: user._doc.level
-                }
-            });
+        // if (user._doc.completion !== answeredQ._doc.level)
+        //     return res.status(401).json({
+        //         message: 'Your level is too low to answer this question',
+        //         status: {
+        //             requiredLevel: answeredQ._doc.level,
+        //             userLevel: user._doc.level
+        //         }
+            // });
 
         // run the tests & collect the console output to response object
         const output = {
@@ -61,7 +61,9 @@ exports.runPracticeAnswer = async (req, res) => {
             outputs: answeredQ._doc.outputs,
             output,
             userId: req.userData.userId,
-            lang: req.body.lang
+            lang: req.body.lang,
+            req: req,
+            res: res
         });
 
         const response = {
@@ -272,7 +274,9 @@ exports.practiceAnswer = async (req, res) => {
             outputs: answeredQ._doc.outputs,
             output,
             userId: req.userData.userId,
-            lang: req.body.lang
+            lang: req.body.lang,
+            req: req,
+            res: res
         });
 
         const response = {

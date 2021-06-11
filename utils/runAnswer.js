@@ -1,9 +1,10 @@
 
 const {exec} = require('child_process'),
       {join} = require('path'),
-      {CODEDIR, MAIN_CLASS} = require('../resources/constants'),
+      {CODEDIR, MAIN_CLASS, SN, ENG} = require('../resources/constants'),
     { promisify } = require('util'),
     { compileCode, execute } = require('./runner'),
+    mapSimplyCode = require('../utils/simplyMapper'),
       {unlink, stat, writeFile} = require('fs');
 
 /**
@@ -18,7 +19,7 @@ const {exec} = require('child_process'),
     * }} params - Input parameters object
  */
 const runAnswer = async (params) => {
-    let { output, outputs } = params;
+    let { output, outputs, req, res } = params;
 
     // generate unique filename for each compilation
     const className = `Class${params.userId}${Date.now()}`;
@@ -38,6 +39,7 @@ const runAnswer = async (params) => {
         // compile
         // const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf8'});
         const compilerResult = await compileCode(compileProcessArgs);
+        console.log(compilerResult);
         output.compilerResult.stdout = compilerResult.stdout;
 
         // try & run test cases
