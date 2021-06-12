@@ -35,7 +35,7 @@ const mapSimplyCode = async (code, flags, filePath, clean = true) => {
     );
     // await for the transpilation to finish
     // else file might be cleaned before promise 
-    
+
     if (to !== from) {
       if (to !== "eng") {
         if (to.includes("_error")) {

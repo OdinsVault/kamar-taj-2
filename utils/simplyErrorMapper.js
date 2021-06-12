@@ -20,12 +20,16 @@ const mapSimplyErrors = async (flags, filePath, clean = true) => {
   var translatedErr = "";
 
   try {
-    const errorText = await readFilePromise(filePath);
+    //const errorText = await readFilePromise(filePath, "utf8");
+    const errorText = "";
+
     if (to == "sn_error") {
       for (var key in errors) {
         if (errorText.includes(key)) {
-          translatedErr = errors[key] + "\n\n" + errorText;
+          translatedErr = errors[key] + "\n" + errorText;
           break;
+        } else {
+          translatedErr = errors["GeneralError:GeneralError"] + "\n" + errorText;
         }
       }
     }
