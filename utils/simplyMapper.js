@@ -41,7 +41,7 @@ const mapSimplyCode = async (code, flags, filePath, clean = true) => {
         if (to.includes("_error")) {
           //handle errors
         } else {
-          if (codeBlock.includes("display")) {
+          if (codeBlock.includes("display") || codeBlock.includes("string")) {
             var splitCon = codeBlock.split('"');
             codeBlock = "";
             for (var i in splitCon) {
