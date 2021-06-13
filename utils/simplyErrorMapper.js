@@ -18,10 +18,15 @@ const mapSimplyErrors = async (flags, filePath, clean = true) => {
   const from = flags.split(" ")[1];
   const errors = mapping.errors;
   var translatedErr = "";
+  var errorText = "";
 
   try {
-    //const errorText = await readFilePromise(filePath, "utf8");
-    const errorText = "";
+    await readFilePromise(filePath, "utf8", (err, data) => {
+      if(err){
+        return;
+      }
+      errorText = data;
+    });
 
     if (to == "sn_error") {
       for (var key in errors) {

@@ -18,6 +18,7 @@ module.exports = Object.freeze({
     // Test runner
     CODEDIR: 'temp-code',
     MAIN_CLASS: 'Main',
+    OUTPATH: "output",
 
     // code lang
     SN: 'sn',

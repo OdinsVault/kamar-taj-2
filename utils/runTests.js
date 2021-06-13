@@ -7,11 +7,13 @@ const { exec } = require("child_process"),
     ENG,
     SN_ERR,
     ENG_ERR,
+    OUTPATH
   } = require("../resources/constants"),
   { promisify } = require("util"),
   { compileCode, execute } = require("./runner"),
   mapSimplyCode = require("../utils/simplyMapper"),
   mapSimplyErrors = require("../utils/simplyErrorMapper"),
+  transpileCode = require('../utils/simplyTranspiler'),
   { unlink, stat, writeFile } = require("fs");
 
 
@@ -45,20 +47,24 @@ const runTestCases = async (testCases, output, userId, lang) => {
         output.answer = translatedCode.stdout;
 
         await writeFilePromise(filePath, output.answer);
-        await writeFilePromise(
-          filePath,
-          output.answer.replace(new RegExp(MAIN_CLASS, "g"), className)
-        );
 
-        const compileProcessArgs = ['-d', `${CODEDIR}`, `${filePath}`];
-        // compile
-        // const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf-8'});
+      //transpile the answer code & prevent the file from cleaning
+      const transpiledCode =  await transpileCode(
+        filePath, 
+        className,
+        false
+      );
+      
+      const newfilepath = join(OUTPATH, "Main.java");
+
+      const compileProcessArgs = ["-d", `${OUTPATH}`, `${newfilepath}`];
+
         const compilerResult = await compileCode(compileProcessArgs);
         output.compilerResult.stdout = compilerResult.stdout;
 
         // create promises array for testcases
         const testcasePromises = [];
-        const runProcessArgs = ['-cp', `${CODEDIR}`, `${className}`];
+        const runProcessArgs = ['-cp', `${OUTPATH}`, "Main"];
 
         testCases.forEach(test => {
             const runProcessStdin = `${test.inputs.trim()} `.replace(new RegExp(/\s/, 'g'), '\n');;
@@ -111,7 +117,7 @@ const runTestCases = async (testCases, output, userId, lang) => {
 
       //translate error
       const err_flags =
-        params.lang === SN ? `${SN_ERR} ${ENG_ERR}` : `${ENG_ERR} ${ENG_ERR}`;
+        lang === SN ? `${SN_ERR} ${ENG_ERR}` : `${ENG_ERR} ${ENG_ERR}`;
       const err_filePath = "";
 
       const translatedErrors = await mapSimplyErrors(

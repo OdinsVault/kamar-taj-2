@@ -1,11 +1,12 @@
 const {exec} = require('child_process'),
       {join} = require('path'),
-      {CODEDIR, MAIN_CLASS, SN, ENG, SN_ERR, ENG_ERR} = require('../resources/constants'),
+      {CODEDIR, MAIN_CLASS, SN, ENG, SN_ERR, ENG_ERR, OUTPATH} = require('../resources/constants'),
     { promisify } = require('util'),
     { compileCode, execute } = require('./runner'),
     mapSimplyCode = require('../utils/simplyMapper'),
     mapSimplyErrors = require('../utils/simplyErrorMapper'),
-      {unlink, stat, writeFile} = require('fs');
+    transpileCode = require('../utils/simplyTranspiler'),
+      {unlink, stat, writeFile, readFile} = require('fs');
 
 /**
  * Compile the answer code & runs the base test case.
@@ -28,12 +29,13 @@ const runAnswer = async (params) => {
     // create promisified functions
     // const execPromise = promisify(exec);
     const writeFilePromise = promisify(writeFile);
+    const readFilePromise =  promisify(readFile);
 
     try {
       // always convert to english before compilation
       const flags = params.lang === SN ? `${ENG} ${SN}` : `${ENG} ${ENG}`;
 
-      // transpile the answer code & prevent the file from cleaning
+      // translate the answer code & prevent the file from cleaning
       const translatedCode = await mapSimplyCode(
         req.body.answer,
         flags,
@@ -41,16 +43,37 @@ const runAnswer = async (params) => {
         false
       );
 
-      //must send translated code to the transpiler?
+      //write translated code to code file
       output.answer = translatedCode.stdout;
       await writeFilePromise(filePath, output.answer);
 
-      await writeFilePromise(
-        filePath,
-        output.answer.replace(new RegExp(MAIN_CLASS, "g"), className)
+      //transpile the answer code & prevent the file from cleaning
+      const transpiledCode =  await transpileCode(
+        filePath, 
+        className,
+        false
       );
 
-      const compileProcessArgs = ["-d", `${CODEDIR}`, `${filePath}`];
+      // const errPath = join(OUTPATH, "err.txt");
+      
+      // try{
+      //   await readFile(errPath, (err, data) => {
+      //     if (err) {
+      //       return
+      //     } else {
+      //       //console.log(data.toString())
+      //       //throw new Error(data.toString())
+      //     }
+      //   });
+      // } catch(e) {
+      //   console.log(e)
+      //     throw e
+      // }   
+      
+      
+      const newfilepath = join(OUTPATH, "Main.java");
+
+      const compileProcessArgs = ["-d", "output", `${newfilepath}`];
       // compile
       // const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf8'});
       const compilerResult = await compileCode(compileProcessArgs);
@@ -59,7 +82,7 @@ const runAnswer = async (params) => {
 
       // try & run test cases
       try {
-        const runProcessArgs = ["-cp", `${CODEDIR}`, `${className}`];
+        const runProcessArgs = ["-cp", `${OUTPATH}`, "Main"];
         const runProcessStdin = `${params.inputs.trim()} `.replace(
           new RegExp(/\s/, "g"),
           "\n"
@@ -106,24 +129,35 @@ const runAnswer = async (params) => {
         };
       }
     } catch (err) {
+
+      
+
         // set compiler results
         output.compilerResult.status = err.status || -1;
         output.compilerResult.stdout = err.stdout || '';
         output.compilerResult.stderr = err.stderr || `${err}`;
 
+        /* await readFile(errPath, (error, data) => {
+          if (error) {
+            return
+          } else {
+            output.compilerResult.stderr = data.toString() || `${err}`;
+          }
+        }); */
+
         //translate error
         const err_flags =
           params.lang === SN ? `${SN_ERR} ${ENG_ERR}` : `${ENG_ERR} ${ENG_ERR}`;
-          const err_filePath = "";
+          //const err_filePath = "";
 
-        const translatedErrors = await mapSimplyErrors(
+        /* const translatedErrors = await mapSimplyErrors(
           err_flags,
-          err_filePath,
+          errPath,
           false
         );
-        output.compilerResult.stderr = translatedErrors.stdout || `${err}`;;
+        output.compilerResult.stderr = translatedErrors.stdout || `${err}`;*/
 
-        console.log('Error while compiling answer', err);
+        console.log('Error while compiling answer', err); 
     } finally {
         // remove the temp files async
         stat(filePath, (err, _) => {
