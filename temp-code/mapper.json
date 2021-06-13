@@ -1,0 +1,186 @@
+[
+  {
+    "name": "Math",
+    "alias": "mathematics",
+    "functions" : [
+      {
+        "name": "sqrt",
+        "alias": "squareRoot",
+        "overloads": [
+          {
+            "return" : "double",
+            "params" : ["int"]
+          },
+          {
+            "returnType" : "double",
+            "params" : ["double"]
+          }
+        ]
+      },
+      {
+        "name": "pow",
+        "alias": "power",
+        "overloads" : [
+          {
+            "return" : "double",
+            "params": ["int", "int"]
+          },
+          {
+            "return" : "double",
+            "params" : ["double", "double"]
+          },
+          {
+            "return" : "double",
+            "params" : ["double", "int"]
+          }
+        ]
+      },
+      {
+        "name": "abs",
+        "alias": "absolute",
+        "overloads": [
+          {
+            "return" : "int",
+            "params" : ["int"]
+          },
+          {
+            "returnType" : "double",
+            "params" : ["double"]
+          }
+        ]
+      },
+      {
+        "name": "ceil",
+        "alias": "roundUp",
+        "overloads": [
+          {
+            "returnType" : "double",
+            "params" : ["double"]
+          }
+        ]
+      },
+      {
+        "name": "floor",
+        "alias": "roundDown",
+        "overloads": [
+          {
+            "returnType" : "double",
+            "params" : ["double"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "String",
+    "alias": "strings",
+    "functions" : [
+      {
+        "name" : "length",
+        "alias" : "getLength",
+        "overloads" : [
+          {
+            "return" : "int",
+            "params" : ["String"]
+          }
+        ]
+      },
+      {
+        "name" : "concat",
+        "alias" : "combine",
+        "overloads" : [
+          {
+            "return" : "String",
+            "params" : ["String", "String"]
+          }
+        ]
+      },
+      {
+        "name" : "isEmpty",
+        "alias" : "isEmpty",
+        "overloads" : [
+          {
+            "return" : "boolean",
+            "params" : ["String"]
+          }
+        ]
+      },
+      {
+        "name" : "toUpperCase",
+        "alias" : "toCapital",
+        "overloads" : [
+          {
+            "return" : "String",
+            "params" : ["String"]
+          }
+        ]
+      },
+      {
+        "name" : "toLowerCase",
+        "alias" : "toSimple",
+        "overloads" : [
+          {
+            "return" : "String",
+            "params" : ["String"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name" : "java.util.Scanner",
+    "alias" : "keyboardIn",
+    "functions" : [
+      {
+        "name" : "nextLine",
+        "alias" : "input",
+        "overloads" :[
+          {
+            "return" : "String",
+            "params" : []
+          }
+        ]
+      },
+      {
+        "name" : "nextInt",
+        "alias" : "input",
+        "overloads" :[
+          {
+            "return" : "int",
+            "params" : []
+          }
+        ]
+      },
+      {
+        "name" : "nextBoolean",
+        "alias" : "input",
+        "overloads" :[
+          {
+            "return" : "boolean",
+            "params" : []
+          }
+        ]
+      },
+      {
+        "name" : "nextFloat",
+        "alias" : "input",
+        "overloads" :[
+          {
+            "return" : "double",
+            "params" : []
+          }
+        ]
+      },
+      {
+        "name" : "next().charAt(0)",
+        "alias" : "input",
+        "overloads" :[
+          {
+            "return" : "char",
+            "params" : []
+          }
+        ]
+      }
+    ]
+  }
+]
