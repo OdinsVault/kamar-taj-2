@@ -110,6 +110,9 @@ const runTestCases = async (testCases, output, userId, lang) => {
         }
 
     } catch (err) {
+      const errPath = join(OUTPATH, "err.txt");
+      const errText = readFileSync(errPath).toString();
+
       // set compiler results
       output.compilerResult.status = err.status || -1;
       output.compilerResult.stdout = err.stdout || "";
@@ -120,11 +123,7 @@ const runTestCases = async (testCases, output, userId, lang) => {
         lang === SN ? `${SN_ERR} ${ENG_ERR}` : `${ENG_ERR} ${ENG_ERR}`;
       const err_filePath = "";
 
-      const translatedErrors = await mapSimplyErrors(
-        err_flags,
-        err_filePath,
-        false
-      );
+      const translatedErrors = await mapSimplyErrors(err_flags, errText, false);
       output.compilerResult.stderr = translatedErrors.stdout || `${err}`;
 
       console.log("Error while compiling answer", err);

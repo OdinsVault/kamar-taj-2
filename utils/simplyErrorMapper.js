@@ -9,34 +9,26 @@ var translated = {
   stderr: "",
 };
 
-const mapSimplyErrors = async (flags, filePath, clean = true) => {
-  // create promise functions
-  //const execPromise = promisify(exec);
-  const readFilePromise = promisify(readFile);
+const mapSimplyErrors = async (flags, errorText, clean = true) => {
 
   const to = flags.split(" ")[0];
   const from = flags.split(" ")[1];
   const errors = mapping.errors;
   var translatedErr = "";
-  var errorText = "";
 
   try {
-    await readFilePromise(filePath, "utf8", (err, data) => {
-      if(err){
-        return;
-      }
-      errorText = data;
-    });
-
     if (to == "sn_error") {
       for (var key in errors) {
         if (errorText.includes(key)) {
-          translatedErr = errors[key] + "\n" + errorText;
+          translatedErr = errors[key] + "\n\n" + errorText;
           break;
         } else {
-          translatedErr = errors["GeneralError:GeneralError"] + "\n" + errorText;
+          translatedErr = errors["GeneralError:GeneralError"] + "\n\n" + errorText;
         }
       }
+    }
+    else{
+      translatedErr = errorText;
     }
     translated.stdout = translatedErr;
     return translated;

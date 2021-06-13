@@ -20,13 +20,8 @@ const transpileCode = async (filePath, className, clean= true) => {
     const transpiled = await execPromise(
       `java -jar ${CODEDIR}/simply.jar ${filePath} ${CODEDIR}/mapper.json`
     );
+    return transpiled;
 
-    console.log(transpiled);
-    
-    // write code to file
-    //await writeFilePromise(filePath, code);
-
-    return null;
   } catch (err) {
     throw new Error(`Error occurred while Simply transpilation: ${err}`);
   } finally {
