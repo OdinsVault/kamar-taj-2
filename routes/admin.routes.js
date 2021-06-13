@@ -59,6 +59,11 @@ router.post(
 router.patch(
     `/${ROUTES.TUTORIAL}/:${ROUTES.LEVEL}`,
     adminAuth,
+    AdminController.updateQuestionComp);
+
+router.post(
+    `/${ROUTES.QCOMP}`,
+    adminAuth,
     AdminController.editTutorial);
 
 // Delete tutorial by Id

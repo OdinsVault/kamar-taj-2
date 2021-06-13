@@ -75,6 +75,9 @@ module.exports = Object.freeze({
         //visualizer.routes
         VISUALIZE: 'visualize',
 
-        TRANSLATE: 'translate'
+        TRANSLATE: 'translate',
+
+        //question composition routes
+        QCOMP: 'composition'
     }
 });

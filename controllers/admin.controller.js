@@ -392,6 +392,41 @@ exports.editTutorial = async (req, res) => {
     }
 }
 
+exports.updateQuestionComp = async (req, res) => {
+
+    // check if all the required props are provided
+    const reqPropsAvailable = competeQReqProps.every(prop => Object.keys(req.body).includes(prop));
+    if (!reqPropsAvailable)
+        return res.status(400).json({message: 'Not all the required properties for a Compete question are provided!'});
+
+      try {
+        const questionComp = new questionComp({
+            _id: new mongoose.Types.ObjectId(),
+            title: req.body.title,
+            sameType: req.body.same,
+            mixedType: req.body.mixed,
+          });
+
+        const saved = await questionCommp.save();
+        
+        res.status(201).json({
+            message: 'Question composition saved successfully!',
+            created: saved,
+            request: {
+              type: 'GET',
+              url: `${ENV.BASE_URL}/${ROUTES.QCOMP}`,
+            },
+          });
+        
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Error occurred while creating compete question',
+            error: err
+        });
+      }
+}
+
 /**
  * Deletes the tutorial & associated questions for it
  * @param {Request} req 
