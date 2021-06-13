@@ -74,6 +74,7 @@ module.exports = Object.freeze({
         TUTORIALLEVEL: 'tutelevel',
         //visualizer.routes
         VISUALIZE: 'visualize',
+        VISUALIZERRUN: 'run',
 
         TRANSLATE: 'translate'
     }

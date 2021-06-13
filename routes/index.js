@@ -46,7 +46,7 @@ router.use(
 
 //Visualizer routes
 router.use(
-    `/${ROUTES.VISUALIZER}`,
+    `/${ROUTES.VISUALIZE}`,
     require('./visualizer.routes')
     
 );
