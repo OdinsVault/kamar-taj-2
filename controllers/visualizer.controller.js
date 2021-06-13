@@ -1,30 +1,53 @@
-const  runTests = require('../utils/runTests'),
-      runAnswer = require('../utils/runAnswer');
+const User = require("../models/user"),
+  mongoose = require("mongoose"),
+  runTests = require("../utils/runTests"),
+  runAnswer = require("../utils/runAnswer"),
+  runVisualizer = require("../utils/simplyVisualizer"),
+  { ROUTES, CODEDIR, SN, ENG } = require("../resources/constants"),
+  { join } = require("path");
 
 exports.visualize = async (req, res) => {
-          const output = {
+    try {
+        // check if user has already completed the question
+       /*  const user = await User.findById(req.userData.userId);
+        if (!user) return res.status(404).json({message: 'User not found'}); */
+        
+        // run the tests & collect the console output to response object
+        const output = {
             answer: req.body.answer,
             compilerResult: {
-              status: 0,
-              stdout: null,
-              stderr: null,
+                status: 0,
+                stdout: null,
+                stderr: null
             },
-            sourceMap: [],
-            runtimeData: []
-          };
+            runtimeData: null,
+            sourceMap: null,
+            passed: false
+        };
+        console.log(req.body);
 
-          /*
-          Send code to transpiler
-          In: simply english code
-          Out: java code, source map, line array
+        // Execute the tests & populate the output object
+        await runVisualizer({
+            inputs: req.body.answer,
+            output: output,
+            //userId: req.userData.userId,
+            lang: req.body.lang,
+            req: req,
+            res: res
+        });
 
-          set source map to output
+        const response = {
+            message: output.passed? 'Visualization Succeeful!' : '',
+            consoleResult: output,
+        };
 
-          Send target code to visualizer.jar
-          In: java code, line array
-          Out: output.json
+        res.status(200).json(response);
 
-          Return sourcemap, runtimeData
-          */
-
-  }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Error occurred while visualizing',
+            error: err
+        });
+    }
+}
