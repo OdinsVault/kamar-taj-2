@@ -3,19 +3,23 @@ const { exec } = require("child_process"),
   {
     CODEDIR,
     MAIN_CLASS,
+    OUTPATH,
     SN,
     ENG,
     SN_ERR,
     ENG_ERR,
+    VIZDIR,
   } = require("../resources/constants"),
   { promisify } = require("util"),
   { compileCode, execute } = require("./runner"),
   mapSimplyCode = require("./simplyMapper"),
   mapSimplyErrors = require("./simplyErrorMapper"),
-  { unlink, stat, writeFile } = require("fs");
+  transpileCode = require("../utils/simplyTranspiler"),
+  //outputData = require("../temp-code/VisualizerJar/Output.json"),
+  { unlink, stat, writeFile, readFileSync } = require("fs");
 
 const runVisualizer = async (params) => {
-  let { inputs, output, req, res } = params;
+  let { inputs, output, lang } = params;
 
   //Run code through transpiler
 
@@ -24,45 +28,75 @@ const runVisualizer = async (params) => {
   const filePath = join(CODEDIR, `${className}.java`);
 
   // create promisified functions
-  // const execPromise = promisify(exec);
+  const execPromise = promisify(exec);
   const writeFilePromise = promisify(writeFile);
 
   try {
     await writeFilePromise(filePath, output.answer);
 
-    await writeFilePromise(
-      filePath,
-      output.answer.replace(new RegExp(MAIN_CLASS, "g"), className)
-    );
+    try {
+      transpiledCode = await transpileCode(filePath, className, false);
+    } catch (e) {
+      throw e;
+    }
 
-    const compileProcessArgs = ["-d", `${CODEDIR}`, `${filePath}`];
-    // compile
-    // const compilerResult = await execPromise(`javac -d ${CODEDIR} ${filePath}`, {encoding: 'utf8'});
-    const compilerResult = await compileCode(compileProcessArgs);
-    //console.log(compilerResult);
-    output.compilerResult.stdout = compilerResult.stdout;
+    const newfilepath = join(OUTPATH, "Main.java");
 
+    const code = readFileSync(newfilepath).toString().split("\n");
+    var sourceCode = output.answer.toString().split("\n");
 
-    console.log(output);
+    var lines = [];
+    var sourceMap = [];
+    var lineCount = 1;
+    var simplyCode = "";
+
+    for (var i = 0; i < sourceCode.length; i++) {
+      if (/\S/.test(sourceCode[i])) {
+        simplyCode += sourceCode[i] + "\n";
+      }
+    }
+
+    output.answer = simplyCode;
+    console.log(output.answer);
+
+    for (var i = 8; i < code.length; i++) {
+      if (/\S/.test(code[i])) {
+        lines.push(i + 1);
+      }
+      sourceMap.push({
+        Simply: lineCount,
+        Java: i,
+      });
+      lineCount++;
+    }
+    const codeLines = lines.toString();
+
+    try {
+      const visualized = await execPromise(
+        `java -jar ${CODEDIR}/VisualizerJar/visualizer-v3.jar "${codeLines}" ${newfilepath} ${CODEDIR}/VisualizerJar`
+      );
+
+      output.runtimeErr = visualized.stderr === "" ? null : visualized.stderr;
+      output.sourceMap = sourceMap;
+      output.passed = true;
+      output.runtimeData = await readFileSync(
+        "temp-code/VisualizerJar/Output.json"
+      ).toString();
+
+      console.log(output.runtimeData);
+
+    } catch (e) {
+      throw e;
+    }
+
+    return output;
   } catch (err) {
-    // set compiler results
-    output.compilerResult.status = err.status || -1;
-    output.compilerResult.stdout = err.stdout || "";
-    output.compilerResult.stderr = err.stderr || `${err}`;
+    output.runtimeData = [];
+    output.runtimeErr = err;
+    output.sourceMap = null;
+    output.passed = false;
 
-    //translate error
-    const err_flags =
-      params.lang === SN ? `${SN_ERR} ${ENG_ERR}` : `${ENG_ERR} ${ENG_ERR}`;
-    const err_filePath = "";
-
-    const translatedErrors = await mapSimplyErrors(
-      err_flags,
-      err_filePath,
-      false
-    );
-    output.compilerResult.stderr = translatedErrors.stdout || `${err}`;
-
-    console.log("Error while compiling answer", err);
+    console.log("Error in visualizing code", err);
   } finally {
     // remove the temp files async
     stat(filePath, (err, _) => {
@@ -75,16 +109,3 @@ const runVisualizer = async (params) => {
 };
 
 module.exports = runVisualizer;
-/*
-          Send code to transpiler
-          In: simply english code
-          Out: java code, source map, line array
-
-          set source map to output
-
-          Send target code to visualizer.jar
-          In: java code, line array
-          Out: output.json
-
-          Return sourcemap, runtimeData
-          */
