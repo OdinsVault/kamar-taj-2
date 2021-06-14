@@ -44,7 +44,7 @@ exports.visualize = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({
-            message: 'Error occurred while visualizing',
+            message: 'Error occurred while visualizing. Check for errors in your code!',
             error: err
         });
     }
